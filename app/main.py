@@ -166,12 +166,12 @@ def tokenize(file_contents):
 
 def evaluate(tokens):
     if not tokens:
-        return None
+        return "nil"  # Return "nil" for empty input
     # Directly return the lexeme for boolean literals and nil
     for token in tokens:
         if token.token_type in ["TRUE", "FALSE", "NIL"]:
             return token.lexeme.lower()  # Ensure the case matches expected output
-    return None
+    return "nil"  # Default return if no valid expression is found
 
 def main():
     if len(sys.argv) < 3:
@@ -196,13 +196,11 @@ def main():
 
     if command == "tokenize":
         for token in tokens:
-            print(f"{token.token_type} {token.lexeme} {token.literal}")
+            literal_value = token.literal if token.literal is not None else "null"
+            print(f"{token.token_type} {token.lexeme} {literal_value}")
     elif command == "evaluate":
         result = evaluate(tokens)
-        if result is not None:
-            print(result)
-        else:
-            print("nil")  # In case of no valid expression, return nil
+        print(result)
 
 if __name__ == "__main__":
     main()
