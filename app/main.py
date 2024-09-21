@@ -170,10 +170,11 @@ def tokenize(file_contents):
     return tokens
 
 def evaluate(tokens):
-    # Placeholder evaluation logic
     for token in tokens:
-        print(f"Evaluating: {token.token_type} {token.lexeme}")
-    return "Evaluation complete."  # or any result based on your evaluation logic
+        if token.token_type in ["TRUE", "FALSE", "NIL"]:
+            return token.lexeme.lower()  # Return "true", "false", or "nil" as expected
+    return "nil"  # Default return if no matching token found
+
 
 def main():
     if len(sys.argv) < 3:
