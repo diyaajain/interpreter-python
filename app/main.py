@@ -1,5 +1,25 @@
 import sys
 
+# Define reserved words and their corresponding token types
+RESERVED_WORDS = {
+    "and": "AND",
+    "class": "CLASS",
+    "else": "ELSE",
+    "false": "FALSE",
+    "for": "FOR",
+    "fun": "FUN",
+    "if": "IF",
+    "nil": "NIL",
+    "or": "OR",
+    "print": "PRINT",
+    "return": "RETURN",
+    "super": "SUPER",
+    "this": "THIS",
+    "true": "TRUE",
+    "var": "VAR",
+    "while": "WHILE",
+}
+
 def main():
     if len(sys.argv) < 3:
         print("Usage: ./your_program.sh tokenize <filename>", file=sys.stderr)
@@ -36,14 +56,17 @@ def main():
             i += 1
             continue
 
-        # Handle identifiers
+        # Handle identifiers and reserved words
         elif c.isalpha() or c == '_':  # Starts with a letter or underscore
             identifier_start = i
             while i < length and (file_contents[i].isalnum() or file_contents[i] == '_'):
                 i += 1
             
             identifier_str = file_contents[identifier_start:i]
-            print(f"IDENTIFIER {identifier_str} null")
+            if identifier_str in RESERVED_WORDS:
+                print(f"{RESERVED_WORDS[identifier_str]} {identifier_str} null")
+            else:
+                print(f"IDENTIFIER {identifier_str} null")
 
         # Handle string literals
         elif c == '"':
