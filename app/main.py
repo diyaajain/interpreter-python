@@ -95,7 +95,7 @@ def tokenize(file_contents):
                 if literal_value.is_integer():
                     literal_value_str = f"{int(literal_value)}.0"
                 else:
-                    literal_value_str = str(literal_value)  # This will handle the normal float formatting
+                    literal_value_str = str(literal_value)
                 
                 tokens.append(Token("NUMBER", number_str, literal_value_str))
             except ValueError:
@@ -169,7 +169,7 @@ def tokenize(file_contents):
 
     tokens.append(Token("EOF", "", None))
 
-    return tokens  # No need to return error status, as we exit on error
+    return tokens
 
 def evaluate(tokens):
     for token in tokens:
