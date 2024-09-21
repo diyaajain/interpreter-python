@@ -35,6 +35,15 @@ def main():
             line_number += 1
             i += 1
             continue
+        # Handle identifiers
+        elif c.isalpha() or c == '_':  # Starts with a letter or underscore
+            identifier_start = i
+            while i < length and (file_contents[i].isalnum() or file_contents[i] == '_'):
+                i += 1
+        
+        identifier_str = file_contents[identifier_start:i]
+        print(f"IDENTIFIER {identifier_str} null")
+
 
         # Handle string literals
         if c == '"':
