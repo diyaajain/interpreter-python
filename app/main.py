@@ -26,7 +26,7 @@ def main():
     while i < length:
         c = file_contents[i]
 
-        # Check for multi-character tokens like '==' and '!='
+        # Check for multi-character tokens like '==', '!=', '<=', '>='
         if c == "=" and i + 1 < length and file_contents[i + 1] == "=":
             print("EQUAL_EQUAL == null")
             i += 2  # Move past the two-character token
@@ -38,6 +38,18 @@ def main():
             i += 2  # Move past the two-character token
         elif c == "!":
             print("BANG ! null")
+            i += 1
+        elif c == "<" and i + 1 < length and file_contents[i + 1] == "=":
+            print("LESS_EQUAL <= null")
+            i += 2  # Move past the two-character token
+        elif c == "<":
+            print("LESS < null")
+            i += 1
+        elif c == ">" and i + 1 < length and file_contents[i + 1] == "=":
+            print("GREATER_EQUAL >= null")
+            i += 2  # Move past the two-character token
+        elif c == ">":
+            print("GREATER > null")
             i += 1
         elif c == "(":
             print("LEFT_PAREN ( null")
