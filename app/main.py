@@ -36,8 +36,30 @@ def main():
             i += 1
             continue
 
+        # Handle string literals
+        if c == '"':
+            string_start = i
+            i += 1
+            string_content = ""
+
+            while i < length and file_contents[i] != '"':
+                if file_contents[i] == '\n':  # Unterminated string at newline
+                    print(f"[line {line_number}] Error: Unterminated string.", file=sys.stderr)
+                    has_error = True
+                    break
+                string_content += file_contents[i]
+                i += 1
+
+            if i < length and file_contents[i] == '"':
+                # Properly terminated string
+                i += 1  # Move past the closing "
+                lexeme = file_contents[string_start:i]
+                print(f'STRING {lexeme} {string_content}')
+            else:
+                has_error = True  # Unterminated string, no closing quote
+
         # Check for multi-character tokens like '==', '!=', '<=', '>=' and comments
-        if c == "=" and i + 1 < length and file_contents[i + 1] == "=":
+        elif c == "=" and i + 1 < length and file_contents[i + 1] == "=":
             print("EQUAL_EQUAL == null")
             i += 2
         elif c == "=":
