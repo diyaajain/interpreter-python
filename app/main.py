@@ -1,8 +1,6 @@
 import sys
 
-
 def main():
-
     if len(sys.argv) < 3:
         print("Usage: ./your_program.sh tokenize <filename>", file=sys.stderr)
         exit(1)
@@ -14,8 +12,14 @@ def main():
         print(f"Unknown command: {command}", file=sys.stderr)
         exit(1)
 
-    with open(filename) as file:
-        file_contents = file.read()
+    try:
+        with open(filename) as file:
+            file_contents = file.read()
+    except FileNotFoundError:
+        print(f"Error: File '{filename}' not found", file=sys.stderr)
+        exit(1)
+
+    has_error = False
 
     for c in file_contents:
         if c == "(":
@@ -38,8 +42,18 @@ def main():
             print("PLUS + null")
         elif c == ";":
             print("SEMICOLON ; null")
-    print("EOF  null")
-    
+        else:
+            # Handle unexpected characters (lexical errors)
+            print(f"[line 1] Error: Unexpected character: {c}", file=sys.stderr)
+            has_error = True
+
+    print("EOF null")
+
+    # Exit with code 65 if there were any lexical errors, otherwise 0
+    if has_error:
+        exit(65)
+    else:
+        exit(0)
 
 if __name__ == "__main__":
     main()
