@@ -64,15 +64,22 @@ def main():
             number_start = i
             while i < length and (file_contents[i].isdigit() or file_contents[i] == '.'):
                 i += 1
-            
+                
             number_str = file_contents[number_start:i]
-            if '.' in number_str:
-                # Floating-point number
-                print(f"NUMBER {number_str} {number_str}")
-            else:
-                # Integer number
-                print(f"NUMBER {number_str} {number_str}.0")
-        
+            try:
+                # Convert to float for proper formatting
+                literal_value = float(number_str)
+                # Format the literal value to remove unnecessary trailing zeros
+                if literal_value.is_integer():
+                    literal_value_str = f"{int(literal_value)}.0"
+                else:
+                    literal_value_str = str(literal_value)  # This will handle the normal float formatting
+                
+                print(f"NUMBER {number_str} {literal_value_str}")
+            except ValueError:
+                print(f"[line {line_number}] Error: Invalid number literal: {number_str}", file=sys.stderr)
+                has_error = True
+
         # Check for multi-character tokens like '==', '!=', '<=', '>=' and comments
         elif c == "=" and i + 1 < length and file_contents[i + 1] == "=":
             print("EQUAL_EQUAL == null")
