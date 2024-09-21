@@ -111,8 +111,13 @@ def tokenize(file_contents):
             tokens.append(Token("STAR", c, None))
             i += 1
         elif c == "/":
-            tokens.append(Token("SLASH", c, None))
-            i += 1
+            if i + 1 < length and file_contents[i + 1] == "/":
+                # Comment: skip until the end of the line
+                while i < length and file_contents[i] != "\n":
+                    i += 1
+            else:
+                tokens.append(Token("SLASH", c, None))
+                i += 1
         elif c == "=" and i + 1 < length and file_contents[i + 1] == "=":
             tokens.append(Token("EQUAL_EQUAL", "==", None))
             i += 2
@@ -163,15 +168,6 @@ def tokenize(file_contents):
 
     tokens.append(Token("EOF", "", None))
     return tokens
-
-def evaluate(tokens):
-    if not tokens:
-        return "nil"  # Return "nil" for empty input
-    # Directly return the lexeme for boolean literals and nil
-    for token in tokens:
-        if token.token_type in ["TRUE", "FALSE", "NIL"]:
-            return token.lexeme.lower()  # Ensure the case matches expected output
-    return "nil"  # Default return if no valid expression is found
 
 def main():
     if len(sys.argv) < 3:
