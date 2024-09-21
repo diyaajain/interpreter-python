@@ -26,6 +26,11 @@ def main():
     while i < length:
         c = file_contents[i]
 
+        # Ignore whitespace characters
+        if c in [' ', '\t', '\n']:
+            i += 1
+            continue
+
         # Check for multi-character tokens like '==', '!=', '<=', '>=' and comments
         if c == "=" and i + 1 < length and file_contents[i + 1] == "=":
             print("EQUAL_EQUAL == null")
@@ -87,9 +92,6 @@ def main():
             i += 1
         elif c == ";":
             print("SEMICOLON ; null")
-            i += 1
-        elif c == "\n":
-            # Move past newline without doing anything
             i += 1
         else:
             # Handle unexpected characters (lexical errors)
