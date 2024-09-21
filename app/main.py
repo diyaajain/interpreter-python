@@ -42,6 +42,10 @@ def main():
             print("PLUS + null")
         elif c == ";":
             print("SEMICOLON ; null")
+        elif c == "=":
+            print("EQUAL = null")
+        elif c == "==":
+            print("EQUAL_EQUAL == null")
         else:
             # Handle unexpected characters (lexical errors)
             print(f"[line 1] Error: Unexpected character: {c}", file=sys.stderr)
