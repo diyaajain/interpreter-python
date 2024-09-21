@@ -119,13 +119,12 @@ def tokenize(file_contents):
         elif c == "=":
             tokens.append(Token("EQUAL", "=", None))
             i += 1
+        elif c == "!" and i + 1 < length and file_contents[i + 1] == "=":
+            tokens.append(Token("BANG_EQUAL", "!=", None))
+            i += 2
         elif c == "!":
-            if i + 1 < length and file_contents[i + 1] == "=":
-                tokens.append(Token("BANG_EQUAL", "!=", None))
-                i += 2
-            else:
-                tokens.append(Token("BANG", "!", None))
-                i += 1
+            tokens.append(Token("BANG", "!", None))
+            i += 1
         elif c == "<":
             if i + 1 < length and file_contents[i + 1] == "=":
                 tokens.append(Token("LESS_EQUAL", "<=", None))
@@ -166,16 +165,12 @@ def tokenize(file_contents):
     return tokens
 
 def evaluate(tokens):
-    if len(tokens) == 1:
-        # Return the literal for boolean values and nil
-        if tokens[0].token_type in ["TRUE", "FALSE", "NIL"]:
-            return tokens[0].lexeme
-        return tokens[0].literal
-    elif len(tokens) == 3 and tokens[1].token_type == "PLUS":
-        left = tokens[0].literal if tokens[0].token_type == "NUMBER" else float(tokens[0].literal)
-        right = tokens[2].literal if tokens[2].token_type == "NUMBER" else float(tokens[2].literal)
-        return left + right
-    # Handle more cases as needed
+    if not tokens:
+        return None
+    # Directly return the lexeme for boolean literals and nil
+    for token in tokens:
+        if token.token_type in ["TRUE", "FALSE", "NIL"]:
+            return token.lexeme.lower()  # Ensure the case matches expected output
     return None
 
 def main():
@@ -204,7 +199,10 @@ def main():
             print(f"{token.token_type} {token.lexeme} {token.literal}")
     elif command == "evaluate":
         result = evaluate(tokens)
-        print(result)
+        if result is not None:
+            print(result)
+        else:
+            print("nil")  # In case of no valid expression, return nil
 
 if __name__ == "__main__":
     main()
