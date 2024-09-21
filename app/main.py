@@ -22,37 +22,42 @@ def main():
     has_error = False
     i = 0
     length = len(file_contents)
+    line_number = 1
 
     while i < length:
         c = file_contents[i]
 
-        # Ignore whitespace characters
-        if c in [' ', '\t', '\n']:
+        # Ignore whitespace characters, track line numbers for newlines
+        if c == ' ' or c == '\t':
+            i += 1
+            continue
+        elif c == '\n':
+            line_number += 1
             i += 1
             continue
 
         # Check for multi-character tokens like '==', '!=', '<=', '>=' and comments
         if c == "=" and i + 1 < length and file_contents[i + 1] == "=":
             print("EQUAL_EQUAL == null")
-            i += 2  # Move past the two-character token
+            i += 2
         elif c == "=":
             print("EQUAL = null")
             i += 1
         elif c == "!" and i + 1 < length and file_contents[i + 1] == "=":
             print("BANG_EQUAL != null")
-            i += 2  # Move past the two-character token
+            i += 2
         elif c == "!":
             print("BANG ! null")
             i += 1
         elif c == "<" and i + 1 < length and file_contents[i + 1] == "=":
             print("LESS_EQUAL <= null")
-            i += 2  # Move past the two-character token
+            i += 2
         elif c == "<":
             print("LESS < null")
             i += 1
         elif c == ">" and i + 1 < length and file_contents[i + 1] == "=":
             print("GREATER_EQUAL >= null")
-            i += 2  # Move past the two-character token
+            i += 2
         elif c == ">":
             print("GREATER > null")
             i += 1
@@ -95,12 +100,12 @@ def main():
             i += 1
         else:
             # Handle unexpected characters (lexical errors)
-            print(f"[line 1] Error: Unexpected character: {c}", file=sys.stderr)
+            print(f"[line {line_number}] Error: Unexpected character: {c}", file=sys.stderr)
             has_error = True
             i += 1
 
     # Print EOF at the end
-    print("EOF  null")  # Ensure there are exactly two spaces between 'EOF' and 'null'
+    print("EOF  null")
 
     # Exit with code 65 if there were any lexical errors, otherwise 0
     if has_error:
