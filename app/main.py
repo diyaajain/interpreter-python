@@ -51,7 +51,6 @@ def main():
                 i += 1
 
             if i < length and file_contents[i] == '"':
-                # Properly terminated string
                 i += 1  # Move past the closing "
                 lexeme = file_contents[string_start:i]
                 print(f'STRING {lexeme} {string_content}')
@@ -60,6 +59,20 @@ def main():
                     print(f"[line {line_number}] Error: Unterminated string.", file=sys.stderr)
                 has_error = True
 
+        # Handle number literals
+        elif c.isdigit() or (c == '.' and (i + 1 < length and file_contents[i + 1].isdigit())):
+            number_start = i
+            while i < length and (file_contents[i].isdigit() or file_contents[i] == '.'):
+                i += 1
+            
+            number_str = file_contents[number_start:i]
+            if '.' in number_str:
+                # Floating-point number
+                print(f"NUMBER {number_str} {number_str}")
+            else:
+                # Integer number
+                print(f"NUMBER {number_str} {number_str}.0")
+        
         # Check for multi-character tokens like '==', '!=', '<=', '>=' and comments
         elif c == "=" and i + 1 < length and file_contents[i + 1] == "=":
             print("EQUAL_EQUAL == null")
