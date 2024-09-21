@@ -26,7 +26,7 @@ def main():
     while i < length:
         c = file_contents[i]
 
-        # Check for multi-character tokens like '==', '!=', '<=', '>='
+        # Check for multi-character tokens like '==', '!=', '<=', '>=' and comments
         if c == "=" and i + 1 < length and file_contents[i + 1] == "=":
             print("EQUAL_EQUAL == null")
             i += 2  # Move past the two-character token
@@ -50,6 +50,13 @@ def main():
             i += 2  # Move past the two-character token
         elif c == ">":
             print("GREATER > null")
+            i += 1
+        elif c == "/" and i + 1 < length and file_contents[i + 1] == "/":
+            # Comment: skip until the end of the line
+            while i < length and file_contents[i] != "\n":
+                i += 1
+        elif c == "/":
+            print("SLASH / null")
             i += 1
         elif c == "(":
             print("LEFT_PAREN ( null")
@@ -80,6 +87,9 @@ def main():
             i += 1
         elif c == ";":
             print("SEMICOLON ; null")
+            i += 1
+        elif c == "\n":
+            # Move past newline without doing anything
             i += 1
         else:
             # Handle unexpected characters (lexical errors)
