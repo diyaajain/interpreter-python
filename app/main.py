@@ -56,7 +56,9 @@ def main():
                 lexeme = file_contents[string_start:i]
                 print(f'STRING {lexeme} {string_content}')
             else:
-                has_error = True  # Unterminated string, no closing quote
+                if not has_error:
+                    print(f"[line {line_number}] Error: Unterminated string.", file=sys.stderr)
+                has_error = True
 
         # Check for multi-character tokens like '==', '!=', '<=', '>=' and comments
         elif c == "=" and i + 1 < length and file_contents[i + 1] == "=":
