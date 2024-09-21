@@ -47,7 +47,7 @@ def main():
 
         # Handle string literals
         elif c == '"':
-            string_start = i + 1
+            string_start = i
             i += 1
             string_content = ""
 
@@ -56,6 +56,10 @@ def main():
                     print(f"[line {line_number}] Error: Unterminated string.", file=sys.stderr)
                     has_error = True
                     break
+                elif file_contents[i] == '\\' and i + 1 < length and file_contents[i + 1] == '"':
+                    string_content += '"'
+                    i += 2  # Skip the escape character and the quote
+                    continue
                 string_content += file_contents[i]
                 i += 1
 
