@@ -20,39 +20,57 @@ def main():
         exit(1)
 
     has_error = False
+    i = 0
+    length = len(file_contents)
 
-    for c in file_contents:
-        if c == "(":
-            print("LEFT_PAREN ( null")
-        elif c == ")":
-            print("RIGHT_PAREN ) null")
-        elif c == "{":
-            print("LEFT_BRACE { null")
-        elif c == "}":
-            print("RIGHT_BRACE } null")
-        elif c == "*":
-            print("STAR * null")
-        elif c == ".":
-            print("DOT . null")
-        elif c == ",":
-            print("COMMA , null")
-        elif c == "-":
-            print("MINUS - null")
-        elif c == "+":
-            print("PLUS + null")
-        elif c == ";":
-            print("SEMICOLON ; null")
+    while i < length:
+        c = file_contents[i]
+
+        # Check for multi-character tokens like '=='
+        if c == "=" and i + 1 < length and file_contents[i + 1] == "=":
+            print("EQUAL_EQUAL == null")
+            i += 2  # Move past the two-character token
         elif c == "=":
             print("EQUAL = null")
-        elif c == "==":
-            print("EQUAL_EQUAL == null")
+            i += 1
+        elif c == "(":
+            print("LEFT_PAREN ( null")
+            i += 1
+        elif c == ")":
+            print("RIGHT_PAREN ) null")
+            i += 1
+        elif c == "{":
+            print("LEFT_BRACE { null")
+            i += 1
+        elif c == "}":
+            print("RIGHT_BRACE } null")
+            i += 1
+        elif c == "*":
+            print("STAR * null")
+            i += 1
+        elif c == ".":
+            print("DOT . null")
+            i += 1
+        elif c == ",":
+            print("COMMA , null")
+            i += 1
+        elif c == "-":
+            print("MINUS - null")
+            i += 1
+        elif c == "+":
+            print("PLUS + null")
+            i += 1
+        elif c == ";":
+            print("SEMICOLON ; null")
+            i += 1
         else:
             # Handle unexpected characters (lexical errors)
             print(f"[line 1] Error: Unexpected character: {c}", file=sys.stderr)
             has_error = True
+            i += 1
 
+    # Print EOF at the end
     print("EOF  null")  # Ensure there are exactly two spaces between 'EOF' and 'null'
-
 
     # Exit with code 65 if there were any lexical errors, otherwise 0
     if has_error:
