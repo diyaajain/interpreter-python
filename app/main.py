@@ -24,6 +24,12 @@ def main():
             print("RIGHT_PAREN ) null")
     print("EOF  null")
     
+    for c in file_contents:
+        if c == "{":
+            print("LEFT_PAREN ( null")
+        if c == "}":
+            print("RIGHT_PAREN ) null")
+    print("EOF  null")
 
 
 if __name__ == "__main__":
