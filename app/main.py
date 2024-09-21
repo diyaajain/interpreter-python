@@ -28,13 +28,14 @@ def main():
         c = file_contents[i]
 
         # Ignore whitespace characters, track line numbers for newlines
-        if c == ' ' or c == '\t':
+        if c in (' ', '\t'):
             i += 1
             continue
         elif c == '\n':
             line_number += 1
             i += 1
             continue
+
         # Handle identifiers
         elif c.isalpha() or c == '_':  # Starts with a letter or underscore
             identifier_start = i
@@ -44,10 +45,9 @@ def main():
             identifier_str = file_contents[identifier_start:i]
             print(f"IDENTIFIER {identifier_str} null")
 
-
         # Handle string literals
-        if c == '"':
-            string_start = i
+        elif c == '"':
+            string_start = i + 1
             i += 1
             string_content = ""
 
