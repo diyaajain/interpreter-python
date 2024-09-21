@@ -166,14 +166,17 @@ def tokenize(file_contents):
     return tokens
 
 def evaluate(tokens):
-    # A simple evaluation logic for expressions
     if len(tokens) == 1:
+        # Return the literal for boolean values and nil
+        if tokens[0].token_type in ["TRUE", "FALSE", "NIL"]:
+            return tokens[0].lexeme
         return tokens[0].literal
     elif len(tokens) == 3 and tokens[1].token_type == "PLUS":
-        left = tokens[0].literal
-        right = tokens[2].literal
-        return float(left) + float(right)
+        left = tokens[0].literal if tokens[0].token_type == "NUMBER" else float(tokens[0].literal)
+        right = tokens[2].literal if tokens[2].token_type == "NUMBER" else float(tokens[2].literal)
+        return left + right
     # Handle more cases as needed
+    return None
 
 def main():
     if len(sys.argv) < 3:
