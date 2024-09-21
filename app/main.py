@@ -40,9 +40,9 @@ def main():
             identifier_start = i
             while i < length and (file_contents[i].isalnum() or file_contents[i] == '_'):
                 i += 1
-        
-        identifier_str = file_contents[identifier_start:i]
-        print(f"IDENTIFIER {identifier_str} null")
+            
+            identifier_str = file_contents[identifier_start:i]
+            print(f"IDENTIFIER {identifier_str} null")
 
 
         # Handle string literals
