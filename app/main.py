@@ -47,7 +47,8 @@ def main():
             print(f"[line 1] Error: Unexpected character: {c}", file=sys.stderr)
             has_error = True
 
-    print("EOF null")
+    print("EOF  null")  # Ensure there are exactly two spaces between 'EOF' and 'null'
+
 
     # Exit with code 65 if there were any lexical errors, otherwise 0
     if has_error:
