@@ -31,7 +31,6 @@ def tokenize(file_contents):
     i = 0
     length = len(file_contents)
     line_number = 1
-    has_error = False  # Error tracking flag
 
     while i < length:
         c = file_contents[i]
@@ -66,8 +65,7 @@ def tokenize(file_contents):
             while i < length and file_contents[i] != '"':
                 if file_contents[i] == '\n':  # Unterminated string at newline
                     print(f"[line {line_number}] Error: Unterminated string.", file=sys.stderr)
-                    has_error = True
-                    break
+                    exit(65)  # Exit immediately with code 65
                 elif file_contents[i] == '\\' and i + 1 < length and file_contents[i + 1] == '"':
                     string_content += '"'
                     i += 2  # Skip the escape character and the quote
@@ -81,7 +79,7 @@ def tokenize(file_contents):
                 tokens.append(Token("STRING", lexeme, string_content))
             else:
                 print(f"[line {line_number}] Error: Unterminated string.", file=sys.stderr)
-                has_error = True
+                exit(65)  # Exit immediately with code 65
 
         # Handle number literals
         elif c.isdigit() or (c == '.' and (i + 1 < length and file_contents[i + 1].isdigit())):
@@ -171,7 +169,7 @@ def tokenize(file_contents):
 
     tokens.append(Token("EOF", "", None))
 
-    return tokens, has_error  # Return tokens and error status
+    return tokens  # No need to return error status, as we exit on error
 
 def evaluate(tokens):
     for token in tokens:
@@ -198,15 +196,13 @@ def main():
         print(f"Error: File '{filename}' not found", file=sys.stderr)
         exit(1)
 
-    tokens, has_error = tokenize(file_contents)
+    tokens = tokenize(file_contents)
 
     if command == "tokenize":
         for token in tokens:
             literal_value = token.literal if token.literal is not None else "null"
             print(f"{token.token_type} {token.lexeme} {literal_value}")
     elif command == "evaluate":
-        if has_error:  # Check for errors before evaluating
-            exit(65)  # Exit with code 65 if there were errors
         result = evaluate(tokens)
         print(result)
 
