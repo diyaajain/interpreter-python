@@ -79,6 +79,23 @@ def tokenize(file_contents):
                 else:
                     error_occurred = True
                     print(f"[line {line_number}] Error: Unterminated string.", file=sys.stderr)
+        
+        # Handle boolean literals
+        elif c in ('t', 'f'):
+            boolean_start = i
+            while i < length and file_contents[i].isalpha():
+                i += 1
+
+            boolean_str = file_contents[boolean_start:i]
+            if boolean_str == "true":
+                tokens.append(Token("TRUE", boolean_str, None))
+            elif boolean_str == "false":
+                tokens.append(Token("FALSE", boolean_str, None))
+            else:
+                # Handle unexpected characters
+                error_occurred = True
+                print(f"[line {line_number}] Error: Unexpected boolean value: {boolean_str}", file=sys.stderr)
+
 
         # Handle number literals
         elif c.isdigit() or (c == '.' and (i + 1 < length and file_contents[i + 1].isdigit())):
@@ -167,19 +184,21 @@ def tokenize(file_contents):
 
     return tokens, error_occurred
 
-
 def evaluate(tokens):
     for token in tokens:
-        # Return string literals directly
         if token.token_type == "STRING":
-            return token.literal.strip('"')  # Remove quotes
-        # Return number literals directly, as int if whole number
+            return token.literal.strip('"')  # Return string literals directly
         elif token.token_type == "NUMBER":
             value = float(token.literal)
             if value.is_integer():
                 return str(int(value))  # Return as int if whole number
             return str(value)  # Return as float otherwise
+        elif token.token_type == "TRUE":
+            return "true"  # Return "true" for TRUE token
+        elif token.token_type == "FALSE":
+            return "false"  # Return "false" for FALSE token
     return "nil"  # Default return if no matching token found
+
 
 def main():
     if len(sys.argv) < 3:
