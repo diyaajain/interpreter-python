@@ -191,52 +191,37 @@ def evaluate(tokens):
         if token.token_type == "LEFT_PAREN":
             stack.append(token)
         elif token.token_type == "RIGHT_PAREN":
-            # Handle expressions inside parentheses
-            expression = []
             while stack and stack[-1].token_type != "LEFT_PAREN":
-                expression.append(stack.pop())
+                token = stack.pop()
+                if token.token_type == "NUMBER":
+                    return token.literal
             stack.pop()  # Remove the LEFT_PAREN
-            expression.reverse()  # Reverse to maintain original order
-            result = evaluate_expression(expression)  # Evaluate the inner expression
-            stack.append(result)  # Push the result back onto the stack
-        elif token.token_type in ["STRING", "TRUE", "FALSE", "NUMBER"]:
-            stack.append(token)  # Push literals onto the stack
+        elif token.token_type == "STRING":
+            return token.literal.strip('"')
+        elif token.token_type == "NUMBER":
+            return token.literal
+        elif token.token_type == "TRUE":
+            return "true"
+        elif token.token_type == "FALSE":
+            return "false"
         elif token.token_type == "MINUS":
-    # Handle unary minus
             if stack:
                 next_token = stack.pop()
                 if next_token.token_type == "NUMBER":
                     negated_value = -float(next_token.literal)
-                    # Format the result correctly
-                    if negated_value.is_integer():
-                        result = Token("NUMBER", str(int(negated_value)), str(int(negated_value)))
-                    else:
-                        result = Token("NUMBER", str(negated_value), str(negated_value))
-                    stack.append(result)
-                else:
-                    print(f"[line {token.line_number}] Error: Unary '-' operator must be followed by a number.", file=sys.stderr)
-
+                    return str(int(negated_value) if negated_value.is_integer() else negated_value)
         elif token.token_type == "BANG":
-            # Handle the NOT operator
             if stack:
                 next_token = stack.pop()
                 if next_token.token_type == "TRUE":
-                    result = Token("FALSE", "false", "false")
+                    return "false"
                 elif next_token.token_type == "FALSE":
-                    result = Token("TRUE", "true", "true")
+                    return "true"
                 elif next_token.token_type == "NUMBER":
-                    result = Token("FALSE", "false", "false")  # Non-zero numbers are considered true
-                elif next_token.token_type == "NIL":
-                    result = Token("TRUE", "true", "true")
-                else:
-                    result = Token("TRUE", "true", "true")  # Everything else is considered truthy
-                stack.append(result)
+                    return "false"  # Non-zero numbers are considered true
 
-    # Final evaluation of the stack
-    if stack:
-        final_result = stack.pop()
-        return final_result.literal  # Return the literal value
     return "nil"
+
 
 
 def evaluate_expression(tokens):
