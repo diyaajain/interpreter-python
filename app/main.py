@@ -198,10 +198,12 @@ def evaluate(tokens):
     for token in tokens:
         if token.token_type == "NUMBER":
             value = float(token.literal)
+
+            # Apply any unary operators before pushing onto the stack
             if unary_operator == "MINUS":
                 value = -value
             stack.append(value)
-            unary_operator = None
+            unary_operator = None  # Reset after processing
 
         elif token.token_type == "TRUE":
             value = True
@@ -249,7 +251,7 @@ def evaluate(tokens):
                     value = stack.pop()
                     if isinstance(value, bool):
                         value = not value
-                    else:
+                    elif isinstance(value, float):
                         value = value != 0  # Non-zero is truthy
                     stack.append(value)
                 unary_operator = None
@@ -265,9 +267,6 @@ def evaluate(tokens):
             return str(int(final_value) if final_value.is_integer() else final_value)
 
     return "nil"  # Default return if no tokens processed
-
-
-
 
 def evaluate_expression(tokens):
     # Implement a basic evaluation for the expression in the context of your language
