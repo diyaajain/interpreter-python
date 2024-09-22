@@ -190,96 +190,55 @@ class Unary:
         self.right = right
 
 def evaluate(tokens):
-    stack = []
-    unary_operator = None
-    bang_count = 0  # Track consecutive 'BANG' operators
+  """Evaluates the given tokens based on their type."""
 
-    for token in tokens:
-        if token.token_type == "NUMBER":
-            value = float(token.literal)
+  stack = []
+  unary_operator = None
+  bang_count = 0  # Track consecutive 'BANG' operators
 
-            # Apply any unary operators before pushing onto the stack
-            if unary_operator == "MINUS":
-                value = -value
-            if bang_count % 2 == 1:  # Apply BANG if used an odd number of times
-                value = not bool(value)  # Non-zero is truthy
-            stack.append(value)
-            unary_operator = None  # Reset after processing
-            bang_count = 0  # Reset BANG count
+  for token in tokens:
+    if token.token_type == "NUMBER":
+      value = float(token.literal)
 
-        elif token.token_type == "TRUE":
-            value = True
-            if bang_count % 2 == 1:
-                value = not value
-            stack.append(value)
-            bang_count = 0
+      # Apply both unary MINUS and consecutive BANG operators
+      if unary_operator == "MINUS":
+        value = -value
+      if bang_count % 2 == 1:  # Apply BANG if used an odd number of times
+        value = not bool(value)  # Non-zero is truthy
+      stack.append(value)
+      unary_operator = None  # Reset after processing
+      bang_count = 0  # Reset BANG count
 
-        elif token.token_type == "FALSE":
-            value = False
-            if bang_count % 2 == 1:
-                value = not value
-            stack.append(value)
-            bang_count = 0
+    elif token.token_type in ("TRUE", "FALSE", "NIL"):
+      value = token.literal if token.literal == "TRUE" else False
+      if bang_count % 2 == 1:
+        value = not bool(value)
+      stack.append(value)
+      bang_count = 0  # Reset BANG count for all literals
 
-        elif token.token_type == "NIL":
-            value = None
-            if bang_count % 2 == 1:
-                value = True  # !nil is true (nil is falsy)
-            stack.append(value)
-            bang_count = 0
+    elif token.token_type == "MINUS":
+      unary_operator = "MINUS"
 
-        elif token.token_type == "MINUS":
-            unary_operator = "MINUS"
+    elif token.token_type == "BANG":
+      bang_count += 1
 
-        elif token.token_type == "BANG":
-            bang_count += 1
+    elif token.token_type == "LEFT_PAREN":
+      stack.append(token)  # Push the '(' onto the stack
 
-            # Negate values on even counts of 'BANG'
-            if bang_count % 2 == 0:
-                if stack:
-                    value = stack.pop()
-                if isinstance(value, bool):
-                    value = not value
-                elif isinstance(value, float):
-                    value = not bool(value)  # Non-zero is truthy
-                stack.append(value)
+    elif token.token_type == "RIGHT_PAREN":
+      # ... (existing code for handling RIGHT_PAREN)
 
-        elif token.token_type == "LEFT_PAREN":
-            stack.append(token)  # Push the '(' onto the stack
-        elif token.token_type == "RIGHT_PAREN":
-            while stack and isinstance(stack[-1], Token) and stack[-1].token_type != "LEFT_PAREN":
-                top_token = stack.pop()
-                if isinstance(top_token, bool):
-                    stack.append(top_token)
-                elif isinstance(top_token, float):
-                    stack.append(top_token)
+  # Final evaluation of the stack
+        if stack:
+            final_value = stack[-1]
+            if isinstance(final_value, bool):
+                return "true" if final_value else "false"
+            elif final_value is None:
+                return "nil"
+            elif isinstance(final_value, float):
+                return str(int(final_value) if final_value.is_integer() else final_value)
 
-            if stack and isinstance(stack[-1], Token) and stack[-1].token_type == "LEFT_PAREN":
-                stack.pop()
-
-            # Handle any remaining unary operator
-            if bang_count % 2 == 1:
-                if stack:
-                    value = stack.pop()
-                    if isinstance(value, bool):
-                        value = not value
-                    elif isinstance(value, float):
-                        value = not bool(value)  # Non-zero is truthy
-                    stack.append(value)
-                bang_count = 0  # Reset BANG count
-
-    # Final evaluation of the stack
-    if stack:
-        final_value = stack[-1]
-        if isinstance(final_value, bool):
-            return "true" if final_value else "false"
-        elif final_value is None:
-            return "nil"
-        elif isinstance(final_value, float):
-            return str(int(final_value) if final_value.is_integer() else final_value)
-
-    return "nil"  # Default return if no tokens processed
-
+  return "nil"  # Default return if no tokens processed
 
 
 def evaluate_expression(tokens):
