@@ -232,7 +232,17 @@ def evaluate(tokens):
             unary_operator = "MINUS"
 
         elif token.token_type == "BANG":
-            bang_count += 1  # Count how many 'BANG' operators we encounter
+            bang_count += 1
+
+            # Negate values on even counts of 'BANG'
+            if bang_count % 2 == 0:
+                if stack:
+                    value = stack.pop()
+                if isinstance(value, bool):
+                    value = not value
+                elif isinstance(value, float):
+                    value = not bool(value)  # Non-zero is truthy
+                stack.append(value)
 
         elif token.token_type == "LEFT_PAREN":
             stack.append(token)  # Push the '(' onto the stack
