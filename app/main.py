@@ -68,10 +68,6 @@ def tokenize(file_contents):
                     error_occurred = True
                     print(f"[line {line_number}] Error: Unterminated string.", file=sys.stderr)
                     break
-                elif file_contents[i] == '\\' and i + 1 < length and file_contents[i + 1] == '"':
-                    string_content += '"'
-                    i += 2
-                    continue
                 string_content += file_contents[i]
                 i += 1
 
@@ -93,12 +89,7 @@ def tokenize(file_contents):
             number_str = file_contents[number_start:i]
             try:
                 literal_value = float(number_str)
-                if literal_value.is_integer():
-                    literal_value_str = f"{int(literal_value)}.0"
-                else:
-                    literal_value_str = str(literal_value)
-                
-                tokens.append(Token("NUMBER", number_str, literal_value_str))
+                tokens.append(Token("NUMBER", number_str, str(literal_value)))
             except ValueError:
                 error_occurred = True
                 print(f"[line {line_number}] Error: Invalid number literal: {number_str}", file=sys.stderr)
@@ -164,9 +155,10 @@ def tokenize(file_contents):
         elif c == ";":
             tokens.append(Token("SEMICOLON", ";", None))
             i += 1
-        elif c == ")":
-            tokens.append(Token("DOT", ".", None))
-            i += 1
+        elif c == ".":
+            error_occurred = True
+            print(f"[line {line_number}] Error: Unexpected character: {c}", file=sys.stderr)
+            i += 1  # Move past the unexpected character
         else:
             error_occurred = True
             print(f"[line {line_number}] Error: Unexpected character: {c}", file=sys.stderr)
@@ -175,6 +167,7 @@ def tokenize(file_contents):
     tokens.append(Token("EOF", "", None))
 
     return tokens, error_occurred
+
 
 def evaluate(tokens):
     for token in tokens:
