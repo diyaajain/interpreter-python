@@ -192,44 +192,53 @@ class Unary:
 # Modify your evaluate function to handle Unary expressions
 
 def evaluate(tokens):
-    result = None
-    unary_operator = None
+    if not tokens:
+        return "nil"
+
+    # We assume the expression starts from the last token in a reverse polish notation manner
+    stack = []
 
     for token in tokens:
         if token.token_type == "NUMBER":
-            value = float(token.literal)
-            if unary_operator == "MINUS":
-                result = -value
-                unary_operator = None
-            else:
-                result = value
+            stack.append(float(token.literal))
 
         elif token.token_type == "TRUE":
-            result = True if unary_operator != "BANG" else False
-            unary_operator = None
+            stack.append(True)
 
         elif token.token_type == "FALSE":
-            result = False if unary_operator != "BANG" else True
-            unary_operator = None
+            stack.append(False)
 
         elif token.token_type == "NIL":
-            result = True if unary_operator == "BANG" else None
-            unary_operator = None
+            stack.append(None)
 
         elif token.token_type == "MINUS":
-            unary_operator = "MINUS"
+            if stack:
+                value = stack.pop()
+                stack.append(-value)
+
         elif token.token_type == "BANG":
-            unary_operator = "BANG"
+            if stack:
+                value = stack.pop()
+                # Apply the logic for toggling truthiness
+                if value in [False, None]:
+                    stack.append(True)
+                else:
+                    stack.append(False)
 
-    if result is None:
-        return "nil"
-    
-    # Convert the final result to the correct format
-    if isinstance(result, bool):
-        return "true" if result else "false"
-    
-    return str(int(result) if result.is_integer() else result)
+    # Final value evaluation
+    if stack:
+        final_value = stack.pop()
+        # Determine how to format the output
+        if isinstance(final_value, float):
+            return str(int(final_value) if final_value.is_integer() else final_value)
+        elif final_value is True:
+            return "true"
+        elif final_value is False:
+            return "false"
+        else:
+            return "nil"
 
+    return "nil"
 
 
 def evaluate_expression(tokens):
