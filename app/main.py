@@ -31,6 +31,7 @@ def tokenize(file_contents):
     i = 0
     length = len(file_contents)
     line_number = 1
+    error_occurred = False
 
     while i < length:
         c = file_contents[i]
@@ -64,8 +65,9 @@ def tokenize(file_contents):
 
             while i < length and file_contents[i] != '"':
                 if file_contents[i] == '\n':  # Unterminated string at newline
+                    error_occurred = True
                     print(f"[line {line_number}] Error: Unterminated string.", file=sys.stderr)
-                    exit(65)  # Exit immediately with code 65
+                    break  # Exit the loop but continue processing
                 elif file_contents[i] == '\\' and i + 1 < length and file_contents[i + 1] == '"':
                     string_content += '"'
                     i += 2  # Skip the escape character and the quote
@@ -73,13 +75,13 @@ def tokenize(file_contents):
                 string_content += file_contents[i]
                 i += 1
 
-            if i < length and file_contents[i] == '"':
+            if not error_occurred and i < length and file_contents[i] == '"':
                 i += 1  # Move past the closing "
                 lexeme = file_contents[string_start:i]
                 tokens.append(Token("STRING", lexeme, string_content))
             else:
-                print(f"[line {line_number}] Error: Unterminated string.", file=sys.stderr)
-                exit(65)  # Exit immediately with code 65
+                # If an unterminated string was detected, we don’t add a token
+                continue
 
         # Handle number literals
         elif c.isdigit() or (c == '.' and (i + 1 < length and file_contents[i + 1].isdigit())):
@@ -91,7 +93,6 @@ def tokenize(file_contents):
             try:
                 # Convert to float for proper formatting
                 literal_value = float(number_str)
-                # Format the literal value to remove unnecessary trailing zeros
                 if literal_value.is_integer():
                     literal_value_str = f"{int(literal_value)}.0"
                 else:
@@ -169,7 +170,7 @@ def tokenize(file_contents):
 
     tokens.append(Token("EOF", "", None))
 
-    return tokens
+    return tokens, error_occurred
 
 def evaluate(tokens):
     for token in tokens:
@@ -196,15 +197,19 @@ def main():
         print(f"Error: File '{filename}' not found", file=sys.stderr)
         exit(1)
 
-    tokens = tokenize(file_contents)
+    tokens, error_occurred = tokenize(file_contents)
 
     if command == "tokenize":
         for token in tokens:
             literal_value = token.literal if token.literal is not None else "null"
             print(f"{token.token_type} {token.lexeme} {literal_value}")
-    elif command == "evaluate":
+    
+    if command == "evaluate":
         result = evaluate(tokens)
         print(result)
+
+    if error_occurred:
+        exit(65)  # Exit with code 65 if any errors occurred
 
 if __name__ == "__main__":
     main()
