@@ -75,7 +75,8 @@ def tokenize(file_contents):
                 i += 1
             
             number_str = file_contents[number_start:i]
-            tokens.append(Token("NUMBER", number_str, str(float(number_str))))
+            if number_str:  # Ensure it's not empty
+                tokens.append(Token("NUMBER", number_str, str(float(number_str))))
 
         # Handle operators
         elif c == "-":
