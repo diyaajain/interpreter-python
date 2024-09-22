@@ -188,24 +188,19 @@ def evaluate(tokens):
     stack = []
     for token in tokens:
         if token.token_type == "LEFT_PAREN":
-            # Start a new evaluation context
             stack.append(token)
         elif token.token_type == "RIGHT_PAREN":
-            # Handle closing parenthesis
             if not stack:
                 print("[line ?] Error: Unmatched closing parenthesis.", file=sys.stderr)
                 return "nil"
             stack.pop()  # Remove the LEFT_PAREN
-            # Evaluate the last valid token in the stack
             if stack:
                 last_token = stack.pop()
                 if last_token.token_type == "STRING":
                     return last_token.literal.strip('"')
                 elif last_token.token_type == "NUMBER":
                     value = float(last_token.literal)
-                    if value.is_integer():
-                        return str(int(value))
-                    return str(value)
+                    return str(int(value) if value.is_integer() else value)
                 elif last_token.token_type == "TRUE":
                     return "true"
                 elif last_token.token_type == "FALSE":
@@ -215,9 +210,7 @@ def evaluate(tokens):
             return token.literal.strip('"')
         elif token.token_type == "NUMBER":
             value = float(token.literal)
-            if value.is_integer():
-                return str(int(value))
-            return str(value)
+            return str(int(value) if value.is_integer() else value)
         elif token.token_type == "TRUE":
             return "true"
         elif token.token_type == "FALSE":
@@ -229,8 +222,10 @@ def evaluate(tokens):
                 if last_token.token_type == "NUMBER":
                     negated_value = -float(last_token.literal)
                     return str(int(negated_value) if negated_value.is_integer() else negated_value)
+                elif last_token.token_type == "LEFT_PAREN":
+                    # Prepare to handle the expression after the minus
+                    continue
         elif token.token_type == "BANG":
-            # Handle unary bang
             if stack:
                 last_token = stack.pop()
                 if last_token.token_type == "TRUE":
@@ -240,6 +235,8 @@ def evaluate(tokens):
                 elif last_token.token_type == "NUMBER":
                     return "false"  # Any number is truthy
     return "nil"
+
+     
 
 
 def main():
