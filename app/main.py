@@ -109,19 +109,19 @@ def evaluate(tokens):
         elif token.token_type == "FALSE":
             stack.append(False)
         elif token.token_type == "MINUS":
-            if len(stack) < 1:
+            if not stack:
                 print("Error: No value to negate.", file=sys.stderr)
                 return "nil"
             right = stack.pop()
             stack.append(-right)
         elif token.token_type == "BANG":
-            if len(stack) < 1:
+            if not stack:
                 print("Error: No value for logical NOT.", file=sys.stderr)
                 return "nil"
             right = stack.pop()
             stack.append(not right)
 
-    if len(stack) == 0:
+    if not stack:
         return "nil"
 
     final_value = stack[-1]
@@ -131,6 +131,7 @@ def evaluate(tokens):
         return str(int(final_value) if final_value.is_integer() else final_value)
 
     return "nil"
+
 
 
 
