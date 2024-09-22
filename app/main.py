@@ -202,17 +202,20 @@ def evaluate(tokens):
         elif token.token_type in ["STRING", "TRUE", "FALSE", "NUMBER"]:
             stack.append(token)  # Push literals onto the stack
         elif token.token_type == "MINUS":
-            # Handle unary minus
+    # Handle unary minus
             if stack:
                 next_token = stack.pop()
                 if next_token.token_type == "NUMBER":
                     negated_value = -float(next_token.literal)
                     # Format the result correctly
-                    formatted_value = str(int(negated_value)) if negated_value.is_integer() else str(negated_value)
-                    result = Token("NUMBER", formatted_value, formatted_value)
+                    if negated_value.is_integer():
+                        result = Token("NUMBER", str(int(negated_value)), str(int(negated_value)))
+                    else:
+                        result = Token("NUMBER", str(negated_value), str(negated_value))
                     stack.append(result)
                 else:
                     print(f"[line {token.line_number}] Error: Unary '-' operator must be followed by a number.", file=sys.stderr)
+
         elif token.token_type == "BANG":
             # Handle the NOT operator
             if stack:
