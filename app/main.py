@@ -92,10 +92,8 @@ def tokenize(file_contents):
             elif boolean_str == "false":
                 tokens.append(Token("FALSE", boolean_str, None))
             else:
-                # Handle unexpected characters
                 error_occurred = True
                 print(f"[line {line_number}] Error: Unexpected boolean value: {boolean_str}", file=sys.stderr)
-
 
         # Handle number literals
         elif c.isdigit() or (c == '.' and (i + 1 < length and file_contents[i + 1].isdigit())):
@@ -191,88 +189,66 @@ class Unary:
 
 def evaluate(tokens):
     stack = []
-    bang_count = 0  # Track consecutive 'BANG' operators
 
     for token in tokens:
         if token.token_type == "NUMBER":
             value = float(token.literal)
-
-            # Apply negation if applicable
-            if bang_count % 2 == 1:  # Odd number of '!'
-                value = not bool(value)  # Non-zero is truthy
-            else:
-                value = bool(value)  # Non-zero is truthy
             stack.append(value)
-            bang_count = 0  # Reset BANG count
 
         elif token.token_type == "TRUE":
-            value = True
-            if bang_count % 2 == 1:
-                value = not value
-            stack.append(value)
-            bang_count = 0
+            stack.append(True)
 
         elif token.token_type == "FALSE":
-            value = False
-            if bang_count % 2 == 1:
-                value = not value
-            stack.append(value)
-            bang_count = 0
+            stack.append(False)
 
         elif token.token_type == "NIL":
-            value = None
-            if bang_count % 2 == 1:
-                value = True  # Treat nil as falsy, so !nil is true
-            stack.append(value)
-            bang_count = 0
+            stack.append(None)
+
+        elif token.token_type == "MINUS":
+            right = stack.pop()  # Pop the last value to negate
+            stack.append(Unary("-", right))  # Push unary expression
 
         elif token.token_type == "BANG":
-            bang_count += 1  # Increment the BANG count for consecutive '!'
+            right = stack.pop()  # Pop the last value to apply logical NOT
+            stack.append(Unary("!", right))  # Push unary expression
 
         elif token.token_type == "LEFT_PAREN":
-            stack.append(token)  # Push the '(' onto the stack
+            stack.append(token)
+
         elif token.token_type == "RIGHT_PAREN":
             while stack and isinstance(stack[-1], Token) and stack[-1].token_type != "LEFT_PAREN":
                 top_token = stack.pop()
-                if isinstance(top_token, bool):
-                    stack.append(top_token)
-                elif isinstance(top_token, float):
-                    stack.append(top_token)
+                if isinstance(top_token, Unary):
+                    value = evaluate_unary(top_token)  # Evaluate unary expression
+                    stack.append(value)
+                else:
+                    stack.append(top_token)  # Handle other values
 
             if stack and isinstance(stack[-1], Token) and stack[-1].token_type == "LEFT_PAREN":
                 stack.pop()
 
-            # Handle any remaining unary operator
-            if bang_count % 2 == 1:
-                if stack:
-                    value = stack.pop()
-                    if isinstance(value, bool):
-                        value = not value
-                    elif isinstance(value, float):
-                        value = not bool(value)  # Non-zero is truthy
-                    stack.append(value)
-                bang_count = 0  # Reset BANG count
-
     # Final evaluation of the stack
     if stack:
         final_value = stack[-1]
-        if isinstance(final_value, bool):
-            return "true" if final_value else "false"
-        elif final_value is None:
-            return "nil"
-        elif isinstance(final_value, float):
-            return "true" if final_value != 0 else "false"
+        return interpret_value(final_value)
 
     return "nil"  # Default return if no tokens processed
 
+def evaluate_unary(expr):
+    if expr.operator == "-":
+        return -interpret_value(expr.right)
+    elif expr.operator == "!":
+        value = interpret_value(expr.right)
+        return "true" if value == "false" or value is None else "false"
 
-
-def evaluate_expression(tokens):
-    # Implement a basic evaluation for the expression in the context of your language
-    for token in tokens:
-        if token.token_type == "NUMBER":
-            return token  # For simplicity, just return the first number
-    return Token("NIL", "nil", None)
+def interpret_value(value):
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    elif value is None:
+        return "nil"
+    elif isinstance(value, float):
+        return str(int(value) if value.is_integer() else value)
+    return value
 
 def main():
     if len(sys.argv) < 3:
@@ -287,25 +263,24 @@ def main():
         exit(1)
 
     try:
-        with open(filename) as file:
+        with open(filename, 'r') as file:
             file_contents = file.read()
+
+        tokens, error_occurred = tokenize(file_contents)
+
+        if error_occurred:
+            exit(1)
+
+        if command == "tokenize":
+            for token in tokens:
+                print(token.token_type, token.lexeme)
+        elif command == "evaluate":
+            result = evaluate(tokens)
+            print(result)
+
     except FileNotFoundError:
-        print(f"Error: File '{filename}' not found", file=sys.stderr)
+        print(f"File not found: {filename}", file=sys.stderr)
         exit(1)
-
-    tokens, error_occurred = tokenize(file_contents)
-
-    if command == "tokenize":
-        for token in tokens:
-            literal_value = token.literal if token.literal is not None else "null"
-            print(f"{token.token_type} {token.lexeme} {literal_value}")
-    
-    if command == "evaluate":
-        result = evaluate(tokens)
-        print(result)
-
-    if error_occurred:
-        exit(65)  # Exit with code 65 if any errors occurred
 
 if __name__ == "__main__":
     main()
