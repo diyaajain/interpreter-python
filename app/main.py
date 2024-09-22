@@ -209,7 +209,22 @@ def evaluate(tokens):
     elif token.token_type == "MINUS":
       saw_minus = True  # Set flag to indicate unary minus seen
 
-    # ... (existing code for handling other token types)
+    elif token.token_type == "BANG":
+      # Negate boolean literals or top of stack (if applicable)
+      if stack and stack[-1].token_type in ("TRUE", "FALSE"):
+        top_value = stack.pop()
+        value = not (top_value.literal == "TRUE")  # Negate boolean value
+        stack.append(value)
+      elif stack:
+        value = stack.pop()
+        value = not value  # Negate any value on stack
+        stack.append(value)
+
+    elif token.token_type in ("TRUE", "FALSE", "NIL"):
+      value = token.literal if token.literal == "TRUE" else False
+      stack.append(value)
+
+    # ... (existing code for handling LEFT_PAREN, RIGHT_PAREN, etc.)
 
     # Final evaluation of the stack
     if stack:
@@ -221,7 +236,9 @@ def evaluate(tokens):
       elif isinstance(final_value, float):
         return str(int(final_value) if final_value.is_integer() else final_value)
 
-  return "nil"  # Default return if no tokens processed
+    return "nil"  # Default return if no tokens processed
+
+
 def evaluate_expression(tokens):
     # Implement a basic evaluation for the expression in the context of your language
     for token in tokens:
