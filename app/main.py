@@ -212,11 +212,15 @@ def evaluate(tokens):
             result = False if unary_operator != "BANG" else True
             unary_operator = None
 
+        elif token.token_type == "NIL":
+            result = True if unary_operator == "BANG" else None
+            unary_operator = None
+
         elif token.token_type == "MINUS":
             unary_operator = "MINUS"
         elif token.token_type == "BANG":
             unary_operator = "BANG"
-    
+
     if result is None:
         return "nil"
     
@@ -225,6 +229,7 @@ def evaluate(tokens):
         return "true" if result else "false"
     
     return str(int(result) if result.is_integer() else result)
+
 
 
 def evaluate_expression(tokens):
