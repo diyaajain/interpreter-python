@@ -191,13 +191,12 @@ def evaluate(tokens):
             # Start a new evaluation context
             stack.append(token)
         elif token.token_type == "RIGHT_PAREN":
-            # Pop until the matching LEFT_PAREN
+            # Handle closing parenthesis
             if not stack:
                 print("[line ?] Error: Unmatched closing parenthesis.", file=sys.stderr)
                 return "nil"
-            # Evaluate the contents inside the parentheses
             stack.pop()  # Remove the LEFT_PAREN
-            # Assume the last token before the parenthesis is what we need to return
+            # Evaluate the last valid token in the stack
             if stack:
                 last_token = stack.pop()
                 if last_token.token_type == "STRING":
@@ -211,7 +210,7 @@ def evaluate(tokens):
                     return "true"
                 elif last_token.token_type == "FALSE":
                     return "false"
-            return "nil"  # No valid content found in parentheses
+            return "nil"
         elif token.token_type == "STRING":
             return token.literal.strip('"')
         elif token.token_type == "NUMBER":
@@ -223,9 +222,24 @@ def evaluate(tokens):
             return "true"
         elif token.token_type == "FALSE":
             return "false"
-    
-    return "nil"  # Default return if no matching token found
-
+        elif token.token_type == "MINUS":
+            # Handle unary minus
+            if stack:
+                last_token = stack.pop()
+                if last_token.token_type == "NUMBER":
+                    negated_value = -float(last_token.literal)
+                    return str(int(negated_value) if negated_value.is_integer() else negated_value)
+        elif token.token_type == "BANG":
+            # Handle unary bang
+            if stack:
+                last_token = stack.pop()
+                if last_token.token_type == "TRUE":
+                    return "false"
+                elif last_token.token_type == "FALSE":
+                    return "true"
+                elif last_token.token_type == "NUMBER":
+                    return "false"  # Any number is truthy
+    return "nil"
 
 
 def main():
