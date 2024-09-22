@@ -183,7 +183,6 @@ def tokenize(file_contents):
     tokens.append(Token("EOF", "", None))
 
     return tokens, error_occurred
-
 def evaluate(tokens):
     stack = []
 
@@ -218,10 +217,9 @@ def evaluate(tokens):
                 elif next_token.token_type == "FALSE":
                     return "true"
                 elif next_token.token_type == "NUMBER":
-                    return "false"  # Non-zero numbers are considered true
+                    return "false" if float(next_token.literal) != 0 else "true"
 
     return "nil"
-
 
 
 def evaluate_expression(tokens):
