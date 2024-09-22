@@ -208,7 +208,7 @@ def evaluate(tokens):
                 next_token = stack.pop()
                 if next_token.token_type == "NUMBER":
                     negated_value = -float(next_token.literal)
-                    return str(int(negated_value) if negated_value.is_integer() else negated_value)
+                    return str(negated_value)  # Directly convert negated value to string
         elif token.token_type == "BANG":
             if stack:
                 next_token = stack.pop()
