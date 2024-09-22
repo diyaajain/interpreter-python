@@ -81,7 +81,6 @@ def tokenize(file_contents):
                     lexeme = file_contents[string_start:i]
                     tokens.append(Token("STRING", lexeme, string_content))
                 else:
-                    # If we reach here and the string wasn't closed, mark an error
                     error_occurred = True
                     print(f"[line {line_number}] Error: Unterminated string.", file=sys.stderr)
 
@@ -93,7 +92,6 @@ def tokenize(file_contents):
                 
             number_str = file_contents[number_start:i]
             try:
-                # Convert to float for proper formatting
                 literal_value = float(number_str)
                 if literal_value.is_integer():
                     literal_value_str = f"{int(literal_value)}.0"
@@ -116,7 +114,6 @@ def tokenize(file_contents):
             i += 1
         elif c == "/":
             if i + 1 < length and file_contents[i + 1] == "/":
-                # Comment: skip until the end of the line
                 while i < length and file_contents[i] != "\n":
                     i += 1
             else:
@@ -167,13 +164,15 @@ def tokenize(file_contents):
             tokens.append(Token("SEMICOLON", ";", None))
             i += 1
         else:
+            # Print an unexpected character error but do not mark error_occurred
             print(f"[line {line_number}] Error: Unexpected character: {c}", file=sys.stderr)
-            error_occurred = True  # Mark error for unexpected character
+            # You can choose to skip this character or handle it differently if needed
             i += 1
 
     tokens.append(Token("EOF", "", None))
 
     return tokens, error_occurred
+
 
 def evaluate(tokens):
     for token in tokens:
