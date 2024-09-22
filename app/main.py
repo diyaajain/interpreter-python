@@ -201,7 +201,8 @@ def evaluate(tokens):
                 token = stack.pop()
                 if token.token_type == "NUMBER":
                     return token.literal
-            stack.pop()  # Remove the LEFT_PAREN
+            if stack:  # Ensure stack is not empty before popping
+                stack.pop()  # Remove the LEFT_PAREN
         elif token.token_type == "STRING":
             return token.literal.strip('"')
         elif token.token_type == "NUMBER":
@@ -211,18 +212,23 @@ def evaluate(tokens):
         elif token.token_type == "FALSE":
             return "false"
         elif token.token_type == "MINUS":
-            # Create a Unary expression and evaluate it
-            next_token = stack.pop()
-            unary_expr = Unary("-", next_token)
-            return -float(unary_expr.right.literal)
+            if stack:  # Check if stack has an operand to negate
+                next_token = stack.pop()
+                unary_expr = Unary("-", next_token)
+                return -float(unary_expr.right.literal)
+            else:
+                print("Error: No operand for unary '-' operator.", file=sys.stderr)
         elif token.token_type == "BANG":
-            # Create a Unary expression and evaluate it
-            next_token = stack.pop()
-            unary_expr = Unary("!", next_token)
-            value = unary_expr.right.literal
-            return "true" if value == "false" or value == "nil" else "false"
+            if stack:  # Check if stack has an operand for negation
+                next_token = stack.pop()
+                unary_expr = Unary("!", next_token)
+                value = unary_expr.right.literal
+                return "true" if value == "false" or value == "nil" else "false"
+            else:
+                print("Error: No operand for unary '!' operator.", file=sys.stderr)
 
     return "nil"
+
 
 
 def evaluate_expression(tokens):
