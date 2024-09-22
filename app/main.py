@@ -170,9 +170,14 @@ def tokenize(file_contents):
 
 def evaluate(tokens):
     for token in tokens:
-        if token.token_type in ["TRUE", "FALSE", "NIL"]:
-            return token.lexeme.lower()  # Return "true", "false", or "nil" as expected
+        # Return string literals directly
+        if token.token_type == "STRING":
+            return token.literal.strip('"')  # Remove quotes
+        # Return number literals directly
+        elif token.token_type == "NUMBER":
+            return str(float(token.literal))  # Ensure correct float representation
     return "nil"  # Default return if no matching token found
+
 
 def main():
     if len(sys.argv) < 3:
