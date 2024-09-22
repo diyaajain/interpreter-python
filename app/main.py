@@ -192,6 +192,7 @@ class Unary:
 def evaluate(tokens):
     stack = []
     unary_operator = None
+    bang_count = 0  # Track consecutive 'BANG' operators
 
     for token in tokens:
         if token.token_type == "NUMBER":
@@ -200,37 +201,38 @@ def evaluate(tokens):
             # Apply any unary operators before pushing onto the stack
             if unary_operator == "MINUS":
                 value = -value
-            elif unary_operator == "BANG":
-                value = not bool(value)  # Any non-zero number is truthy, apply "!"
+            if bang_count % 2 == 1:  # Apply BANG if used an odd number of times
+                value = not bool(value)  # Non-zero is truthy
             stack.append(value)
             unary_operator = None  # Reset after processing
+            bang_count = 0  # Reset BANG count
 
         elif token.token_type == "TRUE":
             value = True
-            if unary_operator == "BANG":
-                value = False
+            if bang_count % 2 == 1:
+                value = not value
             stack.append(value)
-            unary_operator = None
+            bang_count = 0
 
         elif token.token_type == "FALSE":
             value = False
-            if unary_operator == "BANG":
-                value = True
+            if bang_count % 2 == 1:
+                value = not value
             stack.append(value)
-            unary_operator = None
+            bang_count = 0
 
         elif token.token_type == "NIL":
             value = None
-            if unary_operator == "BANG":
-                value = True  # Treat nil as falsy, so !nil is true
+            if bang_count % 2 == 1:
+                value = True  # !nil is true (nil is falsy)
             stack.append(value)
-            unary_operator = None
+            bang_count = 0
 
         elif token.token_type == "MINUS":
             unary_operator = "MINUS"
 
         elif token.token_type == "BANG":
-            unary_operator = "BANG"
+            bang_count += 1  # Count how many 'BANG' operators we encounter
 
         elif token.token_type == "LEFT_PAREN":
             stack.append(token)  # Push the '(' onto the stack
@@ -245,8 +247,8 @@ def evaluate(tokens):
             if stack and isinstance(stack[-1], Token) and stack[-1].token_type == "LEFT_PAREN":
                 stack.pop()
 
-            # Handle unary operator
-            if unary_operator == "BANG":
+            # Handle any remaining unary operator
+            if bang_count % 2 == 1:
                 if stack:
                     value = stack.pop()
                     if isinstance(value, bool):
@@ -254,7 +256,7 @@ def evaluate(tokens):
                     elif isinstance(value, float):
                         value = not bool(value)  # Non-zero is truthy
                     stack.append(value)
-                unary_operator = None
+                bang_count = 0  # Reset BANG count
 
     # Final evaluation of the stack
     if stack:
