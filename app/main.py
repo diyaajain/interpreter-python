@@ -192,53 +192,55 @@ class Unary:
 # Modify your evaluate function to handle Unary expressions
 
 def evaluate(tokens):
-    if not tokens:
-        return "nil"
-
-    # We assume the expression starts from the last token in a reverse polish notation manner
     stack = []
+    unary_operator = None
 
     for token in tokens:
         if token.token_type == "NUMBER":
-            stack.append(float(token.literal))
+            value = float(token.literal)
+
+            # Process unary operators in reverse
+            if unary_operator == "MINUS":
+                value = -value
+            elif unary_operator == "BANG":
+                value = False if value else True
+
+            # Reset unary operator after processing
+            unary_operator = None
+            return str(int(value) if value.is_integer() else value)
 
         elif token.token_type == "TRUE":
-            stack.append(True)
+            value = True
+            if unary_operator == "BANG":
+                value = False
+
+            unary_operator = None
+            return "true" if value else "false"
 
         elif token.token_type == "FALSE":
-            stack.append(False)
+            value = False
+            if unary_operator == "BANG":
+                value = True
+
+            unary_operator = None
+            return "true" if value else "false"
 
         elif token.token_type == "NIL":
-            stack.append(None)
+            value = None
+            if unary_operator == "BANG":
+                value = True
+
+            unary_operator = None
+            return "true" if value else "false"
 
         elif token.token_type == "MINUS":
-            if stack:
-                value = stack.pop()
-                stack.append(-value)
-
+            unary_operator = "MINUS"
         elif token.token_type == "BANG":
-            if stack:
-                value = stack.pop()
-                # Apply the logic for toggling truthiness
-                if value in [False, None]:
-                    stack.append(True)
-                else:
-                    stack.append(False)
+            unary_operator = "BANG"
 
-    # Final value evaluation
-    if stack:
-        final_value = stack.pop()
-        # Determine how to format the output
-        if isinstance(final_value, float):
-            return str(int(final_value) if final_value.is_integer() else final_value)
-        elif final_value is True:
-            return "true"
-        elif final_value is False:
-            return "false"
-        else:
-            return "nil"
+    return "nil"  # Return "nil" if nothing is processed
 
-    return "nil"
+
 
 
 def evaluate_expression(tokens):
