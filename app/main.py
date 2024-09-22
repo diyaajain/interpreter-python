@@ -109,17 +109,17 @@ def evaluate(tokens):
         elif token.token_type == "FALSE":
             stack.append(False)
         elif token.token_type == "MINUS":
-            if not stack:
+            if len(stack) < 1:
                 print("Error: No value to negate.", file=sys.stderr)
                 return "nil"
-            right = stack.pop()  # Pop the last value to negate
-            stack.append(-right)  # Negate and push back
+            right = stack.pop()
+            stack.append(-right)
         elif token.token_type == "BANG":
-            if not stack:
+            if len(stack) < 1:
                 print("Error: No value for logical NOT.", file=sys.stderr)
                 return "nil"
             right = stack.pop()
-            stack.append(not right)  # Logical NOT
+            stack.append(not right)
 
     if stack:
         final_value = stack[-1]
@@ -129,6 +129,7 @@ def evaluate(tokens):
             return str(int(final_value) if final_value.is_integer() else final_value)
 
     return "nil"
+
 
 def main():
     if len(sys.argv) < 3:
