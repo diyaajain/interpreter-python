@@ -186,58 +186,45 @@ def tokenize(file_contents):
 
 def evaluate(tokens):
     stack = []
+
     for token in tokens:
         if token.token_type == "LEFT_PAREN":
             stack.append(token)
         elif token.token_type == "RIGHT_PAREN":
-            if not stack:
-                print("[line ?] Error: Unmatched closing parenthesis.", file=sys.stderr)
-                return "nil"
+            # Handle expressions inside parentheses
+            while stack and stack[-1].token_type != "LEFT_PAREN":
+                token = stack.pop()
+                if token.token_type == "NUMBER":
+                    return token.literal
             stack.pop()  # Remove the LEFT_PAREN
-            if stack:
-                last_token = stack.pop()
-                if last_token.token_type == "STRING":
-                    return last_token.literal.strip('"')
-                elif last_token.token_type == "NUMBER":
-                    value = float(last_token.literal)
-                    return str(int(value) if value.is_integer() else value)
-                elif last_token.token_type == "TRUE":
-                    return "true"
-                elif last_token.token_type == "FALSE":
-                    return "false"
-            return "nil"
         elif token.token_type == "STRING":
             return token.literal.strip('"')
         elif token.token_type == "NUMBER":
-            value = float(token.literal)
-            return str(int(value) if value.is_integer() else value)
+            return token.literal
         elif token.token_type == "TRUE":
             return "true"
         elif token.token_type == "FALSE":
             return "false"
         elif token.token_type == "MINUS":
-            # Handle unary minus
+            # Look ahead to see the next token
             if stack:
-                last_token = stack.pop()
-                if last_token.token_type == "NUMBER":
-                    negated_value = -float(last_token.literal)
+                next_token = stack.pop()
+                if next_token.token_type == "NUMBER":
+                    negated_value = -float(next_token.literal)
                     return str(int(negated_value) if negated_value.is_integer() else negated_value)
-                elif last_token.token_type == "LEFT_PAREN":
-                    # Prepare to handle the expression after the minus
-                    continue
+                stack.append(next_token)  # Reinsert if not a number
         elif token.token_type == "BANG":
+            # Handle the NOT operator
             if stack:
-                last_token = stack.pop()
-                if last_token.token_type == "TRUE":
+                next_token = stack.pop()
+                if next_token.token_type == "TRUE":
                     return "false"
-                elif last_token.token_type == "FALSE":
+                elif next_token.token_type == "FALSE":
                     return "true"
-                elif last_token.token_type == "NUMBER":
-                    return "false"  # Any number is truthy
+                elif next_token.token_type == "NUMBER":
+                    return "false"  # Non-zero numbers are considered true
+
     return "nil"
-
-     
-
 
 def main():
     if len(sys.argv) < 3:
