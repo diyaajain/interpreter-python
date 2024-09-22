@@ -200,16 +200,18 @@ def evaluate(tokens):
             value = float(token.literal)
             if unary_operator == "MINUS":
                 result = -value
-                unary_operator = None  # Reset operator after use
-            elif unary_operator == "BANG":
-                result = not value
-                unary_operator = None  # Reset operator after use
+                unary_operator = None
             else:
                 result = value
+
         elif token.token_type == "TRUE":
-            result = True
+            result = True if unary_operator != "BANG" else False
+            unary_operator = None
+
         elif token.token_type == "FALSE":
-            result = False
+            result = False if unary_operator != "BANG" else True
+            unary_operator = None
+
         elif token.token_type == "MINUS":
             unary_operator = "MINUS"
         elif token.token_type == "BANG":
@@ -217,8 +219,11 @@ def evaluate(tokens):
     
     if result is None:
         return "nil"
-
-    # Return result as a string
+    
+    # Convert the final result to the correct format
+    if isinstance(result, bool):
+        return "true" if result else "false"
+    
     return str(int(result) if result.is_integer() else result)
 
 
