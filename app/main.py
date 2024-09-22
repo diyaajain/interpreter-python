@@ -193,18 +193,21 @@ def evaluate(tokens):
   """Evaluates the given tokens based on their type."""
 
   stack = []
-  unary_operator = None
+  saw_minus = False  # Flag to track unary minus before a number
 
   for token in tokens:
     if token.token_type == "NUMBER":
       value = float(token.literal)
 
-      # Apply both unary MINUS and consecutive BANG operators (if applicable)
-      if unary_operator == "MINUS":
+      # Apply unary minus if encountered before the number
+      if saw_minus:
         value = -value
-      # ... (existing logic for handling BANG operators, if any)
+        saw_minus = False  # Reset the flag after application
+
       stack.append(value)
-      unary_operator = None
+
+    elif token.token_type == "MINUS":
+      saw_minus = True  # Set flag to indicate unary minus seen
 
     # ... (existing code for handling other token types)
 
@@ -219,8 +222,6 @@ def evaluate(tokens):
         return str(int(final_value) if final_value.is_integer() else final_value)
 
   return "nil"  # Default return if no tokens processed
-      
-
 def evaluate_expression(tokens):
     # Implement a basic evaluation for the expression in the context of your language
     for token in tokens:
