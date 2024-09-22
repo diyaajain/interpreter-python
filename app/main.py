@@ -185,19 +185,47 @@ def tokenize(file_contents):
     return tokens, error_occurred
 
 def evaluate(tokens):
+    stack = []
     for token in tokens:
-        if token.token_type == "STRING":
-            return token.literal.strip('"')  # Return string literals directly
+        if token.token_type == "LEFT_PAREN":
+            # Start a new evaluation context
+            stack.append(token)
+        elif token.token_type == "RIGHT_PAREN":
+            # Pop until the matching LEFT_PAREN
+            if not stack:
+                print("[line ?] Error: Unmatched closing parenthesis.", file=sys.stderr)
+                return "nil"
+            # Evaluate the contents inside the parentheses
+            stack.pop()  # Remove the LEFT_PAREN
+            # Assume the last token before the parenthesis is what we need to return
+            if stack:
+                last_token = stack.pop()
+                if last_token.token_type == "STRING":
+                    return last_token.literal.strip('"')
+                elif last_token.token_type == "NUMBER":
+                    value = float(last_token.literal)
+                    if value.is_integer():
+                        return str(int(value))
+                    return str(value)
+                elif last_token.token_type == "TRUE":
+                    return "true"
+                elif last_token.token_type == "FALSE":
+                    return "false"
+            return "nil"  # No valid content found in parentheses
+        elif token.token_type == "STRING":
+            return token.literal.strip('"')
         elif token.token_type == "NUMBER":
             value = float(token.literal)
             if value.is_integer():
-                return str(int(value))  # Return as int if whole number
-            return str(value)  # Return as float otherwise
+                return str(int(value))
+            return str(value)
         elif token.token_type == "TRUE":
-            return "true"  # Return "true" for TRUE token
+            return "true"
         elif token.token_type == "FALSE":
-            return "false"  # Return "false" for FALSE token
+            return "false"
+    
     return "nil"  # Default return if no matching token found
+
 
 
 def main():
