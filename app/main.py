@@ -67,21 +67,23 @@ def tokenize(file_contents):
                 if file_contents[i] == '\n':  # Unterminated string at newline
                     error_occurred = True
                     print(f"[line {line_number}] Error: Unterminated string.", file=sys.stderr)
-                    break  # Exit the loop but continue processing
+                    break
                 elif file_contents[i] == '\\' and i + 1 < length and file_contents[i + 1] == '"':
                     string_content += '"'
-                    i += 2  # Skip the escape character and the quote
+                    i += 2
                     continue
                 string_content += file_contents[i]
                 i += 1
 
-            if not error_occurred and i < length and file_contents[i] == '"':
-                i += 1  # Move past the closing "
-                lexeme = file_contents[string_start:i]
-                tokens.append(Token("STRING", lexeme, string_content))
-            else:
-                # If an unterminated string was detected, we don’t add a token
-                continue
+            if not error_occurred:
+                if i < length and file_contents[i] == '"':
+                    i += 1  # Move past the closing "
+                    lexeme = file_contents[string_start:i]
+                    tokens.append(Token("STRING", lexeme, string_content))
+                else:
+                    # If we reach here and the string wasn't closed, mark an error
+                    error_occurred = True
+                    print(f"[line {line_number}] Error: Unterminated string.", file=sys.stderr)
 
         # Handle number literals
         elif c.isdigit() or (c == '.' and (i + 1 < length and file_contents[i + 1].isdigit())):
@@ -166,6 +168,7 @@ def tokenize(file_contents):
             i += 1
         else:
             print(f"[line {line_number}] Error: Unexpected character: {c}", file=sys.stderr)
+            error_occurred = True  # Mark error for unexpected character
             i += 1
 
     tokens.append(Token("EOF", "", None))
