@@ -190,53 +190,68 @@ class Unary:
         self.right = right
 
 def evaluate(tokens):
-    """Evaluates the given tokens based on their type."""
-
     stack = []
-    saw_minus = False  # Flag to track unary minus before a number
+    bang_count = 0  # Track consecutive 'BANG' operators
 
     for token in tokens:
         if token.token_type == "NUMBER":
             value = float(token.literal)
 
-            # Apply unary minus if encountered before the number
-            if saw_minus:
-                value = -value
-                saw_minus = False  # Reset the flag after application
-
+            # Apply negation if applicable
+            if bang_count % 2 == 1:  # Odd number of '!'
+                value = not bool(value)  # Non-zero is truthy
+            else:
+                value = bool(value)  # Non-zero is truthy
             stack.append(value)
+            bang_count = 0  # Reset BANG count
 
-        elif token.token_type == "MINUS":
-            saw_minus = True  # Set flag to indicate unary minus seen
+        elif token.token_type == "TRUE":
+            value = True
+            if bang_count % 2 == 1:
+                value = not value
+            stack.append(value)
+            bang_count = 0
+
+        elif token.token_type == "FALSE":
+            value = False
+            if bang_count % 2 == 1:
+                value = not value
+            stack.append(value)
+            bang_count = 0
+
+        elif token.token_type == "NIL":
+            value = None
+            if bang_count % 2 == 1:
+                value = True  # Treat nil as falsy, so !nil is true
+            stack.append(value)
+            bang_count = 0
 
         elif token.token_type == "BANG":
-            # Negate boolean literals or top of stack (if applicable)
-            if stack and stack[-1].token_type in ("TRUE", "FALSE"):
-                top_value = stack.pop()
-                value = not (top_value.literal == "TRUE")  # Negate boolean value
-                stack.append(value)
-            elif stack:
-                value = stack.pop()
-                value = not value  # Negate any value on stack
-                stack.append(value)
-
-        elif token.token_type in ("TRUE", "FALSE", "NIL"):
-            value = token.literal if token.literal == "TRUE" else False
-            stack.append(value)
+            bang_count += 1  # Increment the BANG count for consecutive '!'
 
         elif token.token_type == "LEFT_PAREN":
-            stack.append(token)
-
+            stack.append(token)  # Push the '(' onto the stack
         elif token.token_type == "RIGHT_PAREN":
-            while stack and stack[-1].token_type != "LEFT_PAREN":
+            while stack and isinstance(stack[-1], Token) and stack[-1].token_type != "LEFT_PAREN":
                 top_token = stack.pop()
                 if isinstance(top_token, bool):
                     stack.append(top_token)
                 elif isinstance(top_token, float):
                     stack.append(top_token)
 
-            if stack and stack[-1].token_type == "LEFT_PAREN":
+            if stack and isinstance(stack[-1], Token) and stack[-1].token_type == "LEFT_PAREN":
                 stack.pop()
+
+            # Handle any remaining unary operator
+            if bang_count % 2 == 1:
+                if stack:
+                    value = stack.pop()
+                    if isinstance(value, bool):
+                        value = not value
+                    elif isinstance(value, float):
+                        value = not bool(value)  # Non-zero is truthy
+                    stack.append(value)
+                bang_count = 0  # Reset BANG count
 
     # Final evaluation of the stack
     if stack:
@@ -246,9 +261,10 @@ def evaluate(tokens):
         elif final_value is None:
             return "nil"
         elif isinstance(final_value, float):
-            return str(int(final_value) if final_value.is_integer() else final_value)
+            return "true" if final_value != 0 else "false"
 
     return "nil"  # Default return if no tokens processed
+
 
 
 def evaluate_expression(tokens):
