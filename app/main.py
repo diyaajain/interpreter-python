@@ -173,11 +173,13 @@ def evaluate(tokens):
         # Return string literals directly
         if token.token_type == "STRING":
             return token.literal.strip('"')  # Remove quotes
-        # Return number literals directly
+        # Return number literals directly, as int if whole number
         elif token.token_type == "NUMBER":
-            return str(float(token.literal))  # Ensure correct float representation
+            value = float(token.literal)
+            if value.is_integer():
+                return str(int(value))  # Return as int if whole number
+            return str(value)  # Return as float otherwise
     return "nil"  # Default return if no matching token found
-
 
 def main():
     if len(sys.argv) < 3:
