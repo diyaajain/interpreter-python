@@ -199,18 +199,17 @@ def evaluate(tokens):
             expression.reverse()  # Reverse to maintain original order
             result = evaluate_expression(expression)  # Evaluate the inner expression
             stack.append(result)  # Push the result back onto the stack
-        elif token.token_type in ["STRING", "TRUE", "FALSE"]:
+        elif token.token_type in ["STRING", "TRUE", "FALSE", "NUMBER"]:
             stack.append(token)  # Push literals onto the stack
-        elif token.token_type == "NUMBER":
-            stack.append(token)  # Push numbers onto the stack
         elif token.token_type == "MINUS":
             # Handle unary minus
             if stack:
                 next_token = stack.pop()
                 if next_token.token_type == "NUMBER":
                     negated_value = -float(next_token.literal)
-                    # Return it as a NUMBER token to keep it consistent
-                    result = Token("NUMBER", str(negated_value), str(negated_value))
+                    # Format the result correctly
+                    formatted_value = str(int(negated_value)) if negated_value.is_integer() else str(negated_value)
+                    result = Token("NUMBER", formatted_value, formatted_value)
                     stack.append(result)
                 else:
                     print(f"[line {token.line_number}] Error: Unary '-' operator must be followed by a number.", file=sys.stderr)
