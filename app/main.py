@@ -223,8 +223,10 @@ def evaluate(tokens):
                     result = Token("TRUE", "true", "true")
                 elif next_token.token_type == "NUMBER":
                     result = Token("FALSE", "false", "false")  # Non-zero numbers are considered true
+                elif next_token.token_type == "NIL":
+                    result = Token("TRUE", "true", "true")
                 else:
-                    print(f"[line {token.line_number}] Error: Invalid operand for '!'.", file=sys.stderr)
+                    result = Token("TRUE", "true", "true")  # Everything else is considered truthy
                 stack.append(result)
 
     # Final evaluation of the stack
@@ -232,6 +234,7 @@ def evaluate(tokens):
         final_result = stack.pop()
         return final_result.literal  # Return the literal value
     return "nil"
+
 
 def evaluate_expression(tokens):
     # Implement a basic evaluation for the expression in the context of your language
