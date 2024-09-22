@@ -190,51 +190,63 @@ class Unary:
         self.right = right
 
 def evaluate(tokens):
-  """Evaluates the given tokens based on their type."""
+    """Evaluates the given tokens based on their type."""
 
-  stack = []
-  saw_minus = False  # Flag to track unary minus before a number
+    stack = []
+    saw_minus = False  # Flag to track unary minus before a number
 
-  for token in tokens:
-    if token.token_type == "NUMBER":
-      value = float(token.literal)
+    for token in tokens:
+        if token.token_type == "NUMBER":
+            value = float(token.literal)
 
-      # Apply unary minus if encountered before the number
-      if saw_minus:
-        value = -value
-        saw_minus = False  # Reset the flag after application
+            # Apply unary minus if encountered before the number
+            if saw_minus:
+                value = -value
+                saw_minus = False  # Reset the flag after application
 
-      stack.append(value)
+            stack.append(value)
 
-    elif token.token_type == "MINUS":
-      saw_minus = True  # Set flag to indicate unary minus seen
+        elif token.token_type == "MINUS":
+            saw_minus = True  # Set flag to indicate unary minus seen
 
-    elif token.token_type == "BANG":
-      # Negate boolean literals or top of stack (if applicable)
-      if stack and stack[-1].token_type in ("TRUE", "FALSE"):
-        top_value = stack.pop()
-        value = not (top_value.literal == "TRUE")  # Negate boolean value
-        stack.append(value)
-      elif stack:
-        value = stack.pop()
-        value = not value  # Negate any value on stack
-        stack.append(value)
+        elif token.token_type == "BANG":
+            # Negate boolean literals or top of stack (if applicable)
+            if stack and stack[-1].token_type in ("TRUE", "FALSE"):
+                top_value = stack.pop()
+                value = not (top_value.literal == "TRUE")  # Negate boolean value
+                stack.append(value)
+            elif stack:
+                value = stack.pop()
+                value = not value  # Negate any value on stack
+                stack.append(value)
 
-    elif token.token_type in ("TRUE", "FALSE", "NIL"):
-      value = token.literal if token.literal == "TRUE" else False
-      stack.append(value)
+        elif token.token_type in ("TRUE", "FALSE", "NIL"):
+            value = token.literal if token.literal == "TRUE" else False
+            stack.append(value)
 
-    # ... (existing code for handling LEFT_PAREN, RIGHT_PAREN, etc.)
+        elif token.token_type == "LEFT_PAREN":
+            stack.append(token)
+
+        elif token.token_type == "RIGHT_PAREN":
+            while stack and stack[-1].token_type != "LEFT_PAREN":
+                top_token = stack.pop()
+                if isinstance(top_token, bool):
+                    stack.append(top_token)
+                elif isinstance(top_token, float):
+                    stack.append(top_token)
+
+            if stack and stack[-1].token_type == "LEFT_PAREN":
+                stack.pop()
 
     # Final evaluation of the stack
     if stack:
-      final_value = stack[-1]
-      if isinstance(final_value, bool):
-        return "true" if final_value else "false"
-      elif final_value is None:
-        return "nil"
-      elif isinstance(final_value, float):
-        return str(int(final_value) if final_value.is_integer() else final_value)
+        final_value = stack[-1]
+        if isinstance(final_value, bool):
+            return "true" if final_value else "false"
+        elif final_value is None:
+            return "nil"
+        elif isinstance(final_value, float):
+            return str(int(final_value) if final_value.is_integer() else final_value)
 
     return "nil"  # Default return if no tokens processed
 
