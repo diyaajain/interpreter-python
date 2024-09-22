@@ -193,37 +193,33 @@ class Unary:
 
 def evaluate(tokens):
     result = None
+    unary_operator = None
 
     for token in tokens:
-        if token.token_type == "LEFT_PAREN":
-            # Handle parentheses if needed for your context
-            continue
-        elif token.token_type == "RIGHT_PAREN":
-            # Skip for now
-            continue
-        elif token.token_type == "NUMBER":
-            result = float(token.literal)
+        if token.token_type == "NUMBER":
+            value = float(token.literal)
+            if unary_operator == "MINUS":
+                result = -value
+                unary_operator = None  # Reset operator after use
+            elif unary_operator == "BANG":
+                result = not value
+                unary_operator = None  # Reset operator after use
+            else:
+                result = value
         elif token.token_type == "TRUE":
             result = True
         elif token.token_type == "FALSE":
             result = False
         elif token.token_type == "MINUS":
-            if result is not None:  # Negate the last result
-                result = -result
-            else:
-                print("Error: No operand for unary '-' operator.", file=sys.stderr)
+            unary_operator = "MINUS"
         elif token.token_type == "BANG":
-            if result is not None:  # Negate truthiness
-                result = not result
-            else:
-                print("Error: No operand for unary '!' operator.", file=sys.stderr)
-
+            unary_operator = "BANG"
+    
     if result is None:
         return "nil"
-    
-    # Return result as a string, converting back to a suitable format
-    return str(int(result) if result.is_integer() else result)
 
+    # Return result as a string
+    return str(int(result) if result.is_integer() else result)
 
 
 def evaluate_expression(tokens):
