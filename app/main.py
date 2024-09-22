@@ -156,9 +156,8 @@ def tokenize(file_contents):
             tokens.append(Token("SEMICOLON", ";", None))
             i += 1
         elif c == ".":
-            error_occurred = True
-            print(f"[line {line_number}] Error: Unexpected character: {c}", file=sys.stderr)
-            i += 1  # Move past the unexpected character
+            tokens.append(Token("DOT", ".", None))
+            i += 1
         else:
             error_occurred = True
             print(f"[line {line_number}] Error: Unexpected character: {c}", file=sys.stderr)
