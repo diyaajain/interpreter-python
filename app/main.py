@@ -31,12 +31,10 @@ def tokenize(file_contents):
     i = 0
     length = len(file_contents)
     line_number = 1
-    error_occurred = False
 
     while i < length:
         c = file_contents[i]
 
-        # Ignore whitespace characters
         if c in (' ', '\t'):
             i += 1
             continue
@@ -45,7 +43,6 @@ def tokenize(file_contents):
             i += 1
             continue
 
-        # Handle identifiers and reserved words
         elif c.isalpha() or c == '_':
             identifier_start = i
             while i < length and (file_contents[i].isalnum() or file_contents[i] == '_'):
@@ -57,7 +54,6 @@ def tokenize(file_contents):
             else:
                 tokens.append(Token("IDENTIFIER", identifier_str, None))
 
-        # Handle string literals
         elif c == '"':
             string_start = i
             i += 1
@@ -65,22 +61,18 @@ def tokenize(file_contents):
 
             while i < length and file_contents[i] != '"':
                 if file_contents[i] == '\n':  # Unterminated string at newline
-                    error_occurred = True
                     print(f"[line {line_number}] Error: Unterminated string.", file=sys.stderr)
-                    break
+                    return tokens
                 string_content += file_contents[i]
                 i += 1
 
-            if not error_occurred:
-                if i < length and file_contents[i] == '"':
-                    i += 1  # Move past the closing "
-                    lexeme = file_contents[string_start:i]
-                    tokens.append(Token("STRING", lexeme, string_content))
-                else:
-                    error_occurred = True
-                    print(f"[line {line_number}] Error: Unterminated string.", file=sys.stderr)
+            if i < length and file_contents[i] == '"':
+                i += 1  # Move past the closing "
+                lexeme = file_contents[string_start:i]
+                tokens.append(Token("STRING", lexeme, string_content))
+            else:
+                print(f"[line {line_number}] Error: Unterminated string.", file=sys.stderr)
         
-        # Handle boolean literals
         elif c in ('t', 'f'):
             boolean_start = i
             while i < length and file_contents[i].isalpha():
@@ -91,25 +83,15 @@ def tokenize(file_contents):
                 tokens.append(Token("TRUE", boolean_str, None))
             elif boolean_str == "false":
                 tokens.append(Token("FALSE", boolean_str, None))
-            else:
-                error_occurred = True
-                print(f"[line {line_number}] Error: Unexpected boolean value: {boolean_str}", file=sys.stderr)
 
-        # Handle number literals
         elif c.isdigit() or (c == '.' and (i + 1 < length and file_contents[i + 1].isdigit())):
             number_start = i
             while i < length and (file_contents[i].isdigit() or file_contents[i] == '.'):
                 i += 1
                 
             number_str = file_contents[number_start:i]
-            try:
-                literal_value = float(number_str)
-                tokens.append(Token("NUMBER", number_str, str(literal_value)))
-            except ValueError:
-                error_occurred = True
-                print(f"[line {line_number}] Error: Invalid number literal: {number_str}", file=sys.stderr)
+            tokens.append(Token("NUMBER", number_str, str(float(number_str))))
 
-        # Handle operators and other tokens
         elif c == "+":
             tokens.append(Token("PLUS", c, None))
             i += 1
@@ -174,18 +156,12 @@ def tokenize(file_contents):
             tokens.append(Token("DOT", ".", None))
             i += 1
         else:
-            error_occurred = True
             print(f"[line {line_number}] Error: Unexpected character: {c}", file=sys.stderr)
             i += 1  # Move past the unexpected character
 
     tokens.append(Token("EOF", "", None))
 
-    return tokens, error_occurred
-
-class Unary:
-    def __init__(self, operator, right):
-        self.operator = operator
-        self.right = right
+    return tokens
 
 def evaluate(tokens):
     stack = []
@@ -205,18 +181,17 @@ def evaluate(tokens):
             stack.append(None)
 
         elif token.token_type == "MINUS":
-            # Ensure there's something to negate
             if not stack:
                 print("Error: No value to negate.", file=sys.stderr)
                 return "nil"
             right = stack.pop()  # Pop the last value to negate
-            stack.append(-right)  # Push negated value directly
+            stack.append(-right)
 
         elif token.token_type == "BANG":
             if not stack:
                 print("Error: No value for logical NOT.", file=sys.stderr)
                 return "nil"
-            right = stack.pop()  # Pop the last value to apply logical NOT
+            right = stack.pop()
             stack.append("true" if right == "false" or right is None else "false")
 
         elif token.token_type == "LEFT_PAREN":
@@ -225,34 +200,21 @@ def evaluate(tokens):
         elif token.token_type == "RIGHT_PAREN":
             while stack and isinstance(stack[-1], Token) and stack[-1].token_type != "LEFT_PAREN":
                 top_token = stack.pop()
-                stack.append(top_token)  # Handle other values
+                stack.append(top_token)
 
             if stack and isinstance(stack[-1], Token) and stack[-1].token_type == "LEFT_PAREN":
                 stack.pop()
 
-    # Final evaluation of the stack
     if stack:
         final_value = stack[-1]
-        return interpret_value(final_value)
+        if isinstance(final_value, bool):
+            return "true" if final_value else "false"
+        elif final_value is None:
+            return "nil"
+        elif isinstance(final_value, float):
+            return str(int(final_value) if final_value.is_integer() else final_value)
 
-    return "nil"  # Default return if no tokens processed
-
-
-def evaluate_unary(expr):
-    if expr.operator == "-":
-        return -interpret_value(expr.right)
-    elif expr.operator == "!":
-        value = interpret_value(expr.right)
-        return "true" if value == "false" or value is None else "false"
-
-def interpret_value(value):
-    if isinstance(value, bool):
-        return "true" if value else "false"
-    elif value is None:
-        return "nil"
-    elif isinstance(value, float):
-        return str(int(value) if value.is_integer() else value)
-    return value
+    return "nil"
 
 def main():
     if len(sys.argv) < 3:
@@ -267,24 +229,22 @@ def main():
         exit(1)
 
     try:
-        with open(filename, 'r') as file:
+        with open(filename) as file:
             file_contents = file.read()
-
-        tokens, error_occurred = tokenize(file_contents)
-
-        if error_occurred:
-            exit(1)
-
-        if command == "tokenize":
-            for token in tokens:
-                print(token.token_type, token.lexeme)
-        elif command == "evaluate":
-            result = evaluate(tokens)
-            print(result)
-
     except FileNotFoundError:
-        print(f"File not found: {filename}", file=sys.stderr)
+        print(f"Error: File '{filename}' not found", file=sys.stderr)
         exit(1)
+
+    tokens = tokenize(file_contents)
+
+    if command == "tokenize":
+        for token in tokens:
+            literal_value = token.literal if token.literal is not None else "null"
+            print(f"{token.token_type} {token.lexeme} {literal_value}")
+    
+    if command == "evaluate":
+        result = evaluate(tokens)
+        print(result)
 
 if __name__ == "__main__":
     main()
