@@ -190,7 +190,6 @@ class Unary:
         self.right = right
 
 # Modify your evaluate function to handle Unary expressions
-
 def evaluate(tokens):
     stack = []
     unary_operator = None
@@ -274,7 +273,6 @@ def evaluate_expression(tokens):
         if token.token_type == "NUMBER":
             return token  # For simplicity, just return the first number
     return Token("NIL", "nil", None)
-
 
 def main():
     if len(sys.argv) < 3:
