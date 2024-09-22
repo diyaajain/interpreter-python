@@ -194,52 +194,32 @@ def evaluate(tokens):
 
   stack = []
   unary_operator = None
-  bang_count = 0  # Track consecutive 'BANG' operators
 
   for token in tokens:
     if token.token_type == "NUMBER":
       value = float(token.literal)
 
-      # Apply both unary MINUS and consecutive BANG operators
+      # Apply both unary MINUS and consecutive BANG operators (if applicable)
       if unary_operator == "MINUS":
         value = -value
-      if bang_count % 2 == 1:  # Apply BANG if used an odd number of times
-        value = not bool(value)  # Non-zero is truthy
+      # ... (existing logic for handling BANG operators, if any)
       stack.append(value)
-      unary_operator = None  # Reset after processing
-      bang_count = 0  # Reset BANG count
+      unary_operator = None
 
-    elif token.token_type in ("TRUE", "FALSE", "NIL"):
-      value = token.literal if token.literal == "TRUE" else False
-      if bang_count % 2 == 1:
-        value = not bool(value)
-      stack.append(value)
-      bang_count = 0  # Reset BANG count for all literals
+    # ... (existing code for handling other token types)
 
-    elif token.token_type == "MINUS":
-      unary_operator = "MINUS"
-
-    elif token.token_type == "BANG":
-      bang_count += 1
-
-    elif token.token_type == "LEFT_PAREN":
-      stack.append(token)  # Push the '(' onto the stack
-
-    elif token.token_type == "RIGHT_PAREN":
-      # ... (existing code for handling RIGHT_PAREN)
-
-  # Final evaluation of the stack
-        if stack:
-            final_value = stack[-1]
-            if isinstance(final_value, bool):
-                return "true" if final_value else "false"
-            elif final_value is None:
-                return "nil"
-            elif isinstance(final_value, float):
-                return str(int(final_value) if final_value.is_integer() else final_value)
+    # Final evaluation of the stack
+    if stack:
+      final_value = stack[-1]
+      if isinstance(final_value, bool):
+        return "true" if final_value else "false"
+      elif final_value is None:
+        return "nil"
+      elif isinstance(final_value, float):
+        return str(int(final_value) if final_value.is_integer() else final_value)
 
   return "nil"  # Default return if no tokens processed
-
+      
 
 def evaluate_expression(tokens):
     # Implement a basic evaluation for the expression in the context of your language
