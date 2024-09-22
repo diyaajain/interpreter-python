@@ -206,14 +206,14 @@ def evaluate(tokens):
         elif token.token_type == "TRUE":
             value = True
             if unary_operator == "BANG":
-                value = not value
+                value = False
             stack.append(value)
             unary_operator = None
 
         elif token.token_type == "FALSE":
             value = False
             if unary_operator == "BANG":
-                value = not value
+                value = True
             stack.append(value)
             unary_operator = None
 
@@ -230,35 +230,33 @@ def evaluate(tokens):
         elif token.token_type == "BANG":
             unary_operator = "BANG"
 
-        # Handle opening and closing parentheses
         elif token.token_type == "LEFT_PAREN":
             stack.append(token)  # Push the '(' onto the stack
         elif token.token_type == "RIGHT_PAREN":
-            # Evaluate until we find the corresponding '('
             while stack and isinstance(stack[-1], Token) and stack[-1].token_type != "LEFT_PAREN":
                 top_token = stack.pop()
-                if top_token.token_type == "TRUE":
-                    stack.append(True)
-                elif top_token.token_type == "FALSE":
-                    stack.append(False)
-                elif top_token.token_type == "NUMBER":
-                    stack.append(float(top_token.literal))
+                if isinstance(top_token, bool):
+                    stack.append(top_token)
+                elif isinstance(top_token, float):
+                    stack.append(top_token)
 
-            # Pop the left parenthesis
             if stack and isinstance(stack[-1], Token) and stack[-1].token_type == "LEFT_PAREN":
                 stack.pop()
 
-            # Evaluate the expression on the stack if there's a unary operator
+            # Handle unary operator
             if unary_operator == "BANG":
                 if stack:
                     value = stack.pop()
-                    value = not value
+                    if isinstance(value, bool):
+                        value = not value
+                    else:
+                        value = value != 0  # Non-zero is truthy
                     stack.append(value)
-                unary_operator = None  # Reset unary operator
+                unary_operator = None
 
     # Final evaluation of the stack
     if stack:
-        final_value = stack[-1]  # Get the last value from the stack
+        final_value = stack[-1]
         if isinstance(final_value, bool):
             return "true" if final_value else "false"
         elif final_value is None:
@@ -267,6 +265,7 @@ def evaluate(tokens):
             return str(int(final_value) if final_value.is_integer() else final_value)
 
     return "nil"  # Default return if no tokens processed
+
 
 
 
