@@ -192,39 +192,52 @@ def evaluate(tokens):
             stack.append(token)
         elif token.token_type == "RIGHT_PAREN":
             # Handle expressions inside parentheses
+            expression = []
             while stack and stack[-1].token_type != "LEFT_PAREN":
-                token = stack.pop()
-                if token.token_type == "NUMBER":
-                    return token.literal
+                expression.append(stack.pop())
             stack.pop()  # Remove the LEFT_PAREN
-        elif token.token_type == "STRING":
-            return token.literal.strip('"')
-        elif token.token_type == "NUMBER":
-            return token.literal
-        elif token.token_type == "TRUE":
-            return "true"
-        elif token.token_type == "FALSE":
-            return "false"
+            expression.reverse()  # Reverse to maintain original order
+            result = evaluate_expression(expression)  # Evaluate the inner expression
+            stack.append(result)  # Push the result back onto the stack
+        elif token.token_type in ["STRING", "NUMBER", "TRUE", "FALSE"]:
+            stack.append(token)  # Push literals onto the stack
         elif token.token_type == "MINUS":
-            # Look ahead to see the next token
+            # Handle unary minus
             if stack:
                 next_token = stack.pop()
                 if next_token.token_type == "NUMBER":
                     negated_value = -float(next_token.literal)
-                    return str(int(negated_value) if negated_value.is_integer() else negated_value)
-                stack.append(next_token)  # Reinsert if not a number
+                    result = Token("NUMBER", str(negated_value), str(negated_value))
+                    stack.append(result)
+                else:
+                    print(f"[line {token.line_number}] Error: Unary '-' operator must be followed by a number.", file=sys.stderr)
         elif token.token_type == "BANG":
             # Handle the NOT operator
             if stack:
                 next_token = stack.pop()
                 if next_token.token_type == "TRUE":
-                    return "false"
+                    result = Token("FALSE", "false", "false")
                 elif next_token.token_type == "FALSE":
-                    return "true"
+                    result = Token("TRUE", "true", "true")
                 elif next_token.token_type == "NUMBER":
-                    return "false"  # Non-zero numbers are considered true
+                    result = Token("FALSE", "false", "false")  # Non-zero numbers are considered true
+                else:
+                    print(f"[line {token.line_number}] Error: Invalid operand for '!'.", file=sys.stderr)
+                stack.append(result)
 
+    # Final evaluation of the stack
+    if stack:
+        final_result = stack.pop()
+        return final_result.literal
     return "nil"
+
+def evaluate_expression(tokens):
+    # Implement a basic evaluation for the expression in the context of your language
+    for token in tokens:
+        if token.token_type == "NUMBER":
+            return token  # For simplicity, just return the first number
+    return Token("NIL", "nil", None)
+
 
 def main():
     if len(sys.argv) < 3:
