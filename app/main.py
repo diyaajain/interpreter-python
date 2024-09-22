@@ -165,23 +165,31 @@ def tokenize(file_contents):
 
 def evaluate(tokens):
     stack = []
+    expecting_value = True  # Track if we expect a value on the stack
 
     for token in tokens:
         if token.token_type == "NUMBER":
             value = float(token.literal)
             stack.append(value)
+            expecting_value = False
 
         elif token.token_type == "TRUE":
             stack.append(True)
+            expecting_value = False
 
         elif token.token_type == "FALSE":
             stack.append(False)
+            expecting_value = False
 
         elif token.token_type == "NIL":
             stack.append(None)
+            expecting_value = False
 
         elif token.token_type == "MINUS":
-            if not stack:
+            if expecting_value:
+                # If we encounter a unary minus, we expect the next token to be a number
+                continue  # Skip this token; we'll handle it in the next iteration
+            elif not stack:
                 print("Error: No value to negate.", file=sys.stderr)
                 return "nil"
             right = stack.pop()  # Pop the last value to negate
@@ -196,6 +204,7 @@ def evaluate(tokens):
 
         elif token.token_type == "LEFT_PAREN":
             stack.append(token)
+            expecting_value = True  # Reset expecting_value for nested expressions
 
         elif token.token_type == "RIGHT_PAREN":
             while stack and isinstance(stack[-1], Token) and stack[-1].token_type != "LEFT_PAREN":
@@ -204,6 +213,13 @@ def evaluate(tokens):
 
             if stack and isinstance(stack[-1], Token) and stack[-1].token_type == "LEFT_PAREN":
                 stack.pop()
+        
+        if token.token_type == "MINUS":
+            # When we encounter a minus, check if the next token is a number
+            next_token = tokens[tokens.index(token) + 1] if tokens.index(token) + 1 < len(tokens) else None
+            if next_token and next_token.token_type == "NUMBER":
+                stack.append(-float(next_token.literal))  # Push negated number
+                expecting_value = False  # After pushing, we don't expect another value
 
     if stack:
         final_value = stack[-1]
