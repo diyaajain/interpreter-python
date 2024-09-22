@@ -198,49 +198,54 @@ def evaluate(tokens):
     for token in tokens:
         if token.token_type == "NUMBER":
             value = float(token.literal)
-
-            # Process unary operators in reverse
             if unary_operator == "MINUS":
                 value = -value
             elif unary_operator == "BANG":
-                value = False if value else True
-
-            # Reset unary operator after processing
+                value = not value
+            
+            stack.append(value)
             unary_operator = None
-            return str(int(value) if value.is_integer() else value)
 
         elif token.token_type == "TRUE":
             value = True
             if unary_operator == "BANG":
                 value = False
-
+            
+            stack.append(value)
             unary_operator = None
-            return "true" if value else "false"
 
         elif token.token_type == "FALSE":
             value = False
             if unary_operator == "BANG":
                 value = True
-
+            
+            stack.append(value)
             unary_operator = None
-            return "true" if value else "false"
 
         elif token.token_type == "NIL":
             value = None
             if unary_operator == "BANG":
                 value = True
-
+            
+            stack.append(value)
             unary_operator = None
-            return "true" if value else "false"
 
         elif token.token_type == "MINUS":
             unary_operator = "MINUS"
+
         elif token.token_type == "BANG":
             unary_operator = "BANG"
 
-    return "nil"  # Return "nil" if nothing is processed
+    if stack:
+        final_value = stack[-1]  # Get the last value from the stack
+        if isinstance(final_value, bool):
+            return "true" if final_value else "false"
+        elif final_value is None:
+            return "nil"
+        elif isinstance(final_value, float):
+            return str(int(final_value) if final_value.is_integer() else final_value)
 
-
+    return "nil"  # Default return if no tokens processed
 
 
 def evaluate_expression(tokens):
