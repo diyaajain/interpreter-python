@@ -69,11 +69,11 @@ def tokenize(file_contents):
                 tokens.append(Token("FALSE", boolean_str, None))
 
         # Handle number literals
-        elif c.isdigit() or (c == '.' and (i + 1 < length and file_contents[i + 1].isdigit())):
+        elif c.isdigit() or (c == '-' and i + 1 < length and file_contents[i + 1].isdigit()):
             number_start = i
             while i < length and (file_contents[i].isdigit() or file_contents[i] == '.'):
                 i += 1
-                
+            
             number_str = file_contents[number_start:i]
             tokens.append(Token("NUMBER", number_str, str(float(number_str))))
 
