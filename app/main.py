@@ -217,7 +217,7 @@ def evaluate(tokens):
                 elif next_token.token_type == "FALSE":
                     return "true"
                 elif next_token.token_type == "NUMBER":
-                    return "false" if float(next_token.literal) != 0 else "true"
+                    return "false"  # Non-zero numbers are considered true
 
     return "nil"
 
