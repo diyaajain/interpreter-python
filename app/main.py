@@ -121,14 +121,17 @@ def evaluate(tokens):
             right = stack.pop()
             stack.append(not right)
 
-    if stack:
-        final_value = stack[-1]
-        if isinstance(final_value, bool):
-            return "true" if final_value else "false"
-        elif isinstance(final_value, float):
-            return str(int(final_value) if final_value.is_integer() else final_value)
+    if len(stack) == 0:
+        return "nil"
+
+    final_value = stack[-1]
+    if isinstance(final_value, bool):
+        return "true" if final_value else "false"
+    elif isinstance(final_value, float):
+        return str(int(final_value) if final_value.is_integer() else final_value)
 
     return "nil"
+
 
 
 def main():
