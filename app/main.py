@@ -190,44 +190,39 @@ class Unary:
         self.right = right
 
 # Modify your evaluate function to handle Unary expressions
+
 def evaluate(tokens):
-    stack = []
+    result = None
 
     for token in tokens:
         if token.token_type == "LEFT_PAREN":
-            stack.append(token)
+            # Handle parentheses if needed for your context
+            continue
         elif token.token_type == "RIGHT_PAREN":
-            while stack and stack[-1].token_type != "LEFT_PAREN":
-                token = stack.pop()
-                if token.token_type == "NUMBER":
-                    return token.literal
-            if stack:  # Ensure stack is not empty before popping
-                stack.pop()  # Remove the LEFT_PAREN
-        elif token.token_type == "STRING":
-            return token.literal.strip('"')
+            # Skip for now
+            continue
         elif token.token_type == "NUMBER":
-            return token.literal
+            result = float(token.literal)
         elif token.token_type == "TRUE":
-            return "true"
+            result = True
         elif token.token_type == "FALSE":
-            return "false"
+            result = False
         elif token.token_type == "MINUS":
-            if stack:  # Check if stack has an operand to negate
-                next_token = stack.pop()
-                unary_expr = Unary("-", next_token)
-                return -float(unary_expr.right.literal)
+            if result is not None:  # Negate the last result
+                result = -result
             else:
                 print("Error: No operand for unary '-' operator.", file=sys.stderr)
         elif token.token_type == "BANG":
-            if stack:  # Check if stack has an operand for negation
-                next_token = stack.pop()
-                unary_expr = Unary("!", next_token)
-                value = unary_expr.right.literal
-                return "true" if value == "false" or value == "nil" else "false"
+            if result is not None:  # Negate truthiness
+                result = not result
             else:
                 print("Error: No operand for unary '!' operator.", file=sys.stderr)
 
-    return "nil"
+    if result is None:
+        return "nil"
+    
+    # Return result as a string, converting back to a suitable format
+    return str(int(result) if result.is_integer() else result)
 
 
 
