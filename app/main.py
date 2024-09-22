@@ -201,7 +201,7 @@ def evaluate(tokens):
             if unary_operator == "MINUS":
                 value = -value
             elif unary_operator == "BANG":
-                value = not bool(value)  # Any non-zero number is truthy
+                value = not bool(value)  # Any non-zero number is truthy, apply "!"
             stack.append(value)
             unary_operator = None  # Reset after processing
 
@@ -267,6 +267,7 @@ def evaluate(tokens):
             return str(int(final_value) if final_value.is_integer() else final_value)
 
     return "nil"  # Default return if no tokens processed
+
 
 
 def evaluate_expression(tokens):
