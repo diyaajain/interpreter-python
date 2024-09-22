@@ -205,12 +205,19 @@ def evaluate(tokens):
             stack.append(None)
 
         elif token.token_type == "MINUS":
+            # Ensure there's something to negate
+            if not stack:
+                print("Error: No value to negate.", file=sys.stderr)
+                return "nil"
             right = stack.pop()  # Pop the last value to negate
-            stack.append(Unary("-", right))  # Push unary expression
+            stack.append(-right)  # Push negated value directly
 
         elif token.token_type == "BANG":
+            if not stack:
+                print("Error: No value for logical NOT.", file=sys.stderr)
+                return "nil"
             right = stack.pop()  # Pop the last value to apply logical NOT
-            stack.append(Unary("!", right))  # Push unary expression
+            stack.append("true" if right == "false" or right is None else "false")
 
         elif token.token_type == "LEFT_PAREN":
             stack.append(token)
@@ -218,11 +225,7 @@ def evaluate(tokens):
         elif token.token_type == "RIGHT_PAREN":
             while stack and isinstance(stack[-1], Token) and stack[-1].token_type != "LEFT_PAREN":
                 top_token = stack.pop()
-                if isinstance(top_token, Unary):
-                    value = evaluate_unary(top_token)  # Evaluate unary expression
-                    stack.append(value)
-                else:
-                    stack.append(top_token)  # Handle other values
+                stack.append(top_token)  # Handle other values
 
             if stack and isinstance(stack[-1], Token) and stack[-1].token_type == "LEFT_PAREN":
                 stack.pop()
@@ -233,6 +236,7 @@ def evaluate(tokens):
         return interpret_value(final_value)
 
     return "nil"  # Default return if no tokens processed
+
 
 def evaluate_unary(expr):
     if expr.operator == "-":
