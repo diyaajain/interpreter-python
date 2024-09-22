@@ -77,7 +77,7 @@ def tokenize(file_contents):
             number_str = file_contents[number_start:i]
             tokens.append(Token("NUMBER", number_str, str(float(number_str))))
 
-        # Handle operators and other tokens
+        # Handle operators
         elif c == "-":
             tokens.append(Token("MINUS", c, None))
             i += 1
@@ -92,7 +92,7 @@ def tokenize(file_contents):
             i += 1
         else:
             print(f"[line {line_number}] Error: Unexpected character: {c}", file=sys.stderr)
-            i += 1  # Move past the unexpected character
+            i += 1
 
     tokens.append(Token("EOF", "", None))
     return tokens
