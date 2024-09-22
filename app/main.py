@@ -183,6 +183,13 @@ def tokenize(file_contents):
     tokens.append(Token("EOF", "", None))
 
     return tokens, error_occurred
+
+class Unary:
+    def __init__(self, operator, right):
+        self.operator = operator
+        self.right = right
+
+# Modify your evaluate function to handle Unary expressions
 def evaluate(tokens):
     stack = []
 
@@ -204,20 +211,16 @@ def evaluate(tokens):
         elif token.token_type == "FALSE":
             return "false"
         elif token.token_type == "MINUS":
-            if stack:
-                next_token = stack.pop()
-                if next_token.token_type == "NUMBER":
-                    negated_value = -float(next_token.literal)
-                    return str(negated_value)  # Directly convert negated value to string
+            # Create a Unary expression and evaluate it
+            next_token = stack.pop()
+            unary_expr = Unary("-", next_token)
+            return -float(unary_expr.right.literal)
         elif token.token_type == "BANG":
-            if stack:
-                next_token = stack.pop()
-                if next_token.token_type == "TRUE":
-                    return "false"
-                elif next_token.token_type == "FALSE":
-                    return "true"
-                elif next_token.token_type == "NUMBER":
-                    return "false"  # Non-zero numbers are considered true
+            # Create a Unary expression and evaluate it
+            next_token = stack.pop()
+            unary_expr = Unary("!", next_token)
+            value = unary_expr.right.literal
+            return "true" if value == "false" or value == "nil" else "false"
 
     return "nil"
 
