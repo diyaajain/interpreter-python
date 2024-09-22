@@ -189,7 +189,6 @@ class Unary:
         self.operator = operator
         self.right = right
 
-# Modify your evaluate function to handle Unary expressions
 def evaluate(tokens):
     stack = []
     unary_operator = None
@@ -201,6 +200,8 @@ def evaluate(tokens):
             # Apply any unary operators before pushing onto the stack
             if unary_operator == "MINUS":
                 value = -value
+            elif unary_operator == "BANG":
+                value = not bool(value)  # Any non-zero number is truthy
             stack.append(value)
             unary_operator = None  # Reset after processing
 
@@ -251,7 +252,7 @@ def evaluate(tokens):
                     if isinstance(value, bool):
                         value = not value
                     elif isinstance(value, float):
-                        value = value != 0  # Non-zero is truthy
+                        value = not bool(value)  # Non-zero is truthy
                     stack.append(value)
                 unary_operator = None
 
@@ -266,6 +267,7 @@ def evaluate(tokens):
             return str(int(final_value) if final_value.is_integer() else final_value)
 
     return "nil"  # Default return if no tokens processed
+
 
 def evaluate_expression(tokens):
     # Implement a basic evaluation for the expression in the context of your language
