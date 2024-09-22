@@ -200,33 +200,27 @@ def evaluate(tokens):
             value = float(token.literal)
             if unary_operator == "MINUS":
                 value = -value
-            elif unary_operator == "BANG":
-                value = not value
-            
             stack.append(value)
             unary_operator = None
 
         elif token.token_type == "TRUE":
             value = True
             if unary_operator == "BANG":
-                value = False
-            
+                value = not value
             stack.append(value)
             unary_operator = None
 
         elif token.token_type == "FALSE":
             value = False
             if unary_operator == "BANG":
-                value = True
-            
+                value = not value
             stack.append(value)
             unary_operator = None
 
         elif token.token_type == "NIL":
             value = None
             if unary_operator == "BANG":
-                value = True
-            
+                value = True  # Treat nil as falsy, so !nil is true
             stack.append(value)
             unary_operator = None
 
@@ -236,6 +230,33 @@ def evaluate(tokens):
         elif token.token_type == "BANG":
             unary_operator = "BANG"
 
+        # Handle opening and closing parentheses
+        elif token.token_type == "LEFT_PAREN":
+            stack.append(token)  # Push the '(' onto the stack
+        elif token.token_type == "RIGHT_PAREN":
+            # Evaluate until we find the corresponding '('
+            while stack and isinstance(stack[-1], Token) and stack[-1].token_type != "LEFT_PAREN":
+                top_token = stack.pop()
+                if top_token.token_type == "TRUE":
+                    stack.append(True)
+                elif top_token.token_type == "FALSE":
+                    stack.append(False)
+                elif top_token.token_type == "NUMBER":
+                    stack.append(float(top_token.literal))
+
+            # Pop the left parenthesis
+            if stack and isinstance(stack[-1], Token) and stack[-1].token_type == "LEFT_PAREN":
+                stack.pop()
+
+            # Evaluate the expression on the stack if there's a unary operator
+            if unary_operator == "BANG":
+                if stack:
+                    value = stack.pop()
+                    value = not value
+                    stack.append(value)
+                unary_operator = None  # Reset unary operator
+
+    # Final evaluation of the stack
     if stack:
         final_value = stack[-1]  # Get the last value from the stack
         if isinstance(final_value, bool):
@@ -246,6 +267,7 @@ def evaluate(tokens):
             return str(int(final_value) if final_value.is_integer() else final_value)
 
     return "nil"  # Default return if no tokens processed
+
 
 
 def evaluate_expression(tokens):
