@@ -100,6 +100,7 @@ def tokenize(file_contents):
                 
                 tokens.append(Token("NUMBER", number_str, literal_value_str))
             except ValueError:
+                error_occurred = True
                 print(f"[line {line_number}] Error: Invalid number literal: {number_str}", file=sys.stderr)
 
         # Handle operators and other tokens
@@ -164,15 +165,13 @@ def tokenize(file_contents):
             tokens.append(Token("SEMICOLON", ";", None))
             i += 1
         else:
-            # Print an unexpected character error but do not mark error_occurred
+            error_occurred = True
             print(f"[line {line_number}] Error: Unexpected character: {c}", file=sys.stderr)
-            # You can choose to skip this character or handle it differently if needed
-            i += 1
+            i += 1  # Move past the unexpected character
 
     tokens.append(Token("EOF", "", None))
 
     return tokens, error_occurred
-
 
 def evaluate(tokens):
     for token in tokens:
